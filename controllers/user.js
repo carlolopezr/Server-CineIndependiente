@@ -22,7 +22,6 @@ const postUser =  async(req=request, res=response)=> {
     }
     user.password = bcryptjs.hashSync(user.password, salt)
 
-
     try {
         existingEmail(user.email)
         await prisma.user.create({data:user})

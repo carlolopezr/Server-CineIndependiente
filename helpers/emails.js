@@ -1,5 +1,6 @@
 const { createTransport } = require("nodemailer");
 const crypto = require('crypto');
+const { prisma } = require("../database/config");
 
 const transporter = createTransport({
     host: 'smtp-relay.brevo.com',
