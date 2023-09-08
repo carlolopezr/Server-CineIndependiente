@@ -21,14 +21,21 @@ const postUser =  async(req=request, res=response)=> {
         password,
         emailVerified
     }
+
+    const passwordErrors = validatePassword(user.password);
+
+    if (passwordErrors.length > 0) {
+        return res.status(400).json({ errors: passwordErrors });
+    }
+    // 8 caracteres minimo, 1 mayuscula y 1 caracter raro
     user.password = bcryptjs.hashSync(user.password, salt)
 
     try {
         existingEmail(user.email)
         await prisma.user.create({data:user})
-        res.json(user)
+        res.status(200).json(user)
     } catch (error) {
-        res.json(error);
+        res.status(400).json('No se pudo realizar la solicitud', error);
     }
     
 }
@@ -45,11 +52,10 @@ const requestEmailVerification = async(req=request, res=response) => {
     try {
         await prisma.emailVerification.create({data:emailVerification})
         await sendVerificationCode(emailVerification.email, emailVerification.verificationCode)
+        res.status(200).json('Correo de verificación enviado correctamente')
     } catch (error) {
-        console.log(error);
+        res.status(400).json('No se pudo enviar el correo de verificación')
     } 
-    
-    res.status(200).json('Correo de verificación enviado correctamente')
 } 
 
 const getUsers = async(req=request, res=response) => {
@@ -59,9 +65,68 @@ const getUsers = async(req=request, res=response) => {
 
 }
 
+const checkVerificationCode = async(req=request, res=response) => {
+
+    const {email, verificationCode} = req.body
+
+    try {
+        const check = await prisma.emailVerification.findUnique({where: {
+            email:email,
+            verificationCode:verificationCode
+        }})
+
+        if (!check || check.expiresAt < Date.now()) {
+            res.status(400).json({
+                msg:'El código introducido es incorrecto o ha expirado'
+            })
+        }
+        await prisma.user.update({
+            where: {
+                email:email
+            },
+            data: {
+                emailVerified: true
+            }
+        })
+        res.status(200).json({
+            msg:'Email validado correctamente',
+            email    
+        })
+    } catch (error) {
+        res.status(400).json({
+            error
+        })
+    }
+}
+
+const validatePassword = (password) => {
+    const uppercaseRegex = /[A-Z]/;
+    const specialCharacterRegex = /[!@#$%^&*(),.?":{}|<>]/;
+  
+    const hasUppercase = uppercaseRegex.test(password);
+    const hasSpecialCharacter = specialCharacterRegex.test(password);
+    
+    const errors = [];
+  
+    if (!hasUppercase) {
+      errors.push('La contraseña debe contener al menos una mayúscula');
+    }
+  
+    if (!hasSpecialCharacter) {
+      errors.push('La contraseña debe contener al menos un caracter especial');
+    }
+
+    if (password.length < 8) {
+        errors.push('La contraseña debe tener al menos 8 caracteres')
+    }
+  
+    return errors;
+  }
+
 module.exports = {
     getUser,
     postUser,
     getUsers,
-    requestEmailVerification
+    requestEmailVerification,
+    checkVerificationCode
 }

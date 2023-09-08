@@ -27,6 +27,6 @@ model emailVerification {
   email String
   verificationCode Int
   createdAt DateTime @default(now())
-  expiresAt DateTime @default(dbgenerated("(NOW() + INTERVAL 1 HOUR)"))
+  expiresAt DateTime @default(dbgenerated("(NOW() + INTERVAL 10 MINUTE)"))
 }
 
