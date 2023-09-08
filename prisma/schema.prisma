@@ -10,3 +10,23 @@ datasource db {
   url = env("DATABASE_URL")
   relationMode = "prisma"
 }
+
+model User {
+  id    Int      @id @default(autoincrement())
+  email String   @unique
+  name  String
+  lastname String
+  password String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  emailVerified Boolean
+}
+
+model emailVerification {
+  id Int @id @default(autoincrement())
+  email String
+  verificationCode Int
+  createdAt DateTime @default(now())
+  expiresAt DateTime @default(dbgenerated("(NOW() + INTERVAL 1 HOUR)"))
+}
+

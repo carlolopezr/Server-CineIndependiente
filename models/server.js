@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const fileUpload = require('express-fileupload')
 
-// const { dbConnection } = require('../database/config')
 
 class Server {
 
@@ -11,10 +10,8 @@ class Server {
         this.port = process.env.PORT;
 
         this.paths = {
+            user: '/api/user'
         }
-
-        // Conectar a base de datos
-        // this.conectarDB()
 
         // Middlewares
         this.middlewares();
@@ -23,9 +20,6 @@ class Server {
         this.routes();
     }
 
-    // async conectarDB() {
-    //     await dbConnection()
-    // }
 
     middlewares() {
 
@@ -49,6 +43,7 @@ class Server {
 
     routes() {
         //Rutas aquí
+        this.app.use(this.paths.user, require('../routes/user'));
     }
 
     listen() {
