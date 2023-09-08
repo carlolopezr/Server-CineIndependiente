@@ -33,7 +33,8 @@ const postUser =  async(req=request, res=response)=> {
     try {
         existingEmail(user.email)
         await prisma.user.create({data:user})
-        res.status(200).json(user)
+        const { password, ...userWithoutPassword } = user;
+        res.status(200).json(userWithoutPassword)
     } catch (error) {
         res.status(400).json('No se pudo realizar la solicitud', error);
     }
@@ -70,16 +71,17 @@ const checkVerificationCode = async(req=request, res=response) => {
     const {email, verificationCode} = req.body
 
     try {
-        const check = await prisma.emailVerification.findUnique({where: {
-            email:email,
-            verificationCode:verificationCode
+
+        const check = await prisma.emailVerification.findFirst({where: {
+            email, verificationCode
         }})
+        console.log(check);
+        
 
         if (!check || check.expiresAt < Date.now()) {
-            res.status(400).json({
-                msg:'El código introducido es incorrecto o ha expirado'
-            })
+            throw new Error('El código no es correcto o ha expirado')
         }
+
         await prisma.user.update({
             where: {
                 email:email
@@ -87,14 +89,19 @@ const checkVerificationCode = async(req=request, res=response) => {
             data: {
                 emailVerified: true
             }
+        }).then( () => {
+            prisma.emailVerification.deleteMany({where: {
+                email, verificationCode
+            }})
         })
         res.status(200).json({
             msg:'Email validado correctamente',
             email    
         })
+
     } catch (error) {
         res.status(400).json({
-            error
+            error: error.message
         })
     }
 }
