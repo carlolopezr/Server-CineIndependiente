@@ -1,7 +1,7 @@
 const { request, response } = require('express')
 const { prisma } = require('../database/config')
 const bcryptjs = require('bcryptjs');
-const { requestEmailVerification, sendVerificationCode } = require('../helpers/emails');
+const {sendVerificationCode, existingEmail } = require('../helpers/emails');
 
 
 const getUser = async(req = request, res = response) => {
@@ -22,7 +22,9 @@ const postUser =  async(req=request, res=response)=> {
     }
     user.password = bcryptjs.hashSync(user.password, salt)
 
+
     try {
+        existingEmail(user.email)
         await prisma.user.create({data:user})
         await requestEmailVerification(user.email)
             .then((code) => {
@@ -34,6 +36,26 @@ const postUser =  async(req=request, res=response)=> {
     res.json(user)
 }
 
+const requestEmailVerification = async(req=request, res=response) => {
+    
+    const { email } = req.body
+    existingEmail(email);
+    const verificationCode = crypto.randomInt(100000,999999)
+    const emailVerification = {
+        email,
+        verificationCode
+    }
+
+    try {
+        await prisma.emailVerification.create({data:emailVerification})
+        await sendVerificationCode(emailVerification.email, email.verificationCode)
+    } catch (error) {
+        console.log(error);
+    } 
+    
+    res.status(200).json('Correo de verificación enviado correctamente')
+} 
+
 const getUsers = async(req=request, res=response) => {
 
     const users = await prisma.user.findMany()
@@ -44,5 +66,6 @@ const getUsers = async(req=request, res=response) => {
 module.exports = {
     getUser,
     postUser,
-    getUsers
+    getUsers,
+    requestEmailVerification
 }

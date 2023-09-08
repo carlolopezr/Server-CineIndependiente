@@ -8,6 +8,7 @@ router.get('/', getUser)
 router.post('/', postUser)
 
 router.get('/users', getUsers)
+router.post('/emailVerification')
 
 
 module.exports = router;

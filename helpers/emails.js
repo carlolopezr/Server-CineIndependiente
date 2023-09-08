@@ -21,33 +21,22 @@ const sendVerificationCode = async(email, verificationCode) => {
     })
 }
 
-const requestEmailVerification = async(email) => {
 
+const existingEmail = async(email) => {
+    
     const existingEmail = await prisma.user.findUnique({where: {
         email:email,
         emailVerified: true
     }})
-    if (existingEmail) {
-        return
-    }
-   
-    const verificationCode = crypto.randomInt(100000,999999)
-    const emailVerification = {
-        email,
-        verificationCode
-    }
 
-    try {
-        await prisma.emailVerification.create({data:emailVerification})
-        return verificationCode
-    } catch (error) {
-        console.log(error);
-    }  
-} 
+    if (existingEmail) {
+        throw new Error('El correo ingresado no es válido')
+    }
+}
 
 
 module.exports = {
     transporter,
     sendVerificationCode,
-    requestEmailVerification
+    existingEmail
 }
