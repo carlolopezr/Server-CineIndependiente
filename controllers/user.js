@@ -26,20 +26,16 @@ const postUser =  async(req=request, res=response)=> {
     try {
         existingEmail(user.email)
         await prisma.user.create({data:user})
-        await requestEmailVerification(user.email)
-            .then((code) => {
-                sendVerificationCode(user.email, code)
-        })
+        res.json(user)
     } catch (error) {
-        console.log(error);
+        res.json(error);
     }
-    res.json(user)
+    
 }
 
 const requestEmailVerification = async(req=request, res=response) => {
     
     const { email } = req.body
-    existingEmail(email);
     const verificationCode = crypto.randomInt(100000,999999)
     const emailVerification = {
         email,

@@ -26,7 +26,6 @@ const existingEmail = async(email) => {
     
     const existingEmail = await prisma.user.findUnique({where: {
         email:email,
-        emailVerified: true
     }})
 
     if (existingEmail) {
