@@ -1,6 +1,7 @@
 const { request, response } = require('express')
 const { prisma } = require('../database/config')
 const bcryptjs = require('bcryptjs');
+const crypto = require('crypto');
 const {sendVerificationCode, existingEmail } = require('../helpers/emails');
 
 
@@ -43,7 +44,7 @@ const requestEmailVerification = async(req=request, res=response) => {
 
     try {
         await prisma.emailVerification.create({data:emailVerification})
-        await sendVerificationCode(emailVerification.email, email.verificationCode)
+        await sendVerificationCode(emailVerification.email, emailVerification.verificationCode)
     } catch (error) {
         console.log(error);
     } 
