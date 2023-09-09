@@ -105,11 +105,13 @@ const checkVerificationCode = async(req=request, res=response) => {
             }})
         })
 
-        const { password, ...userWithoutPassword } = user;
+        console.log(user, 'AQUI ESTA EL USUARIO');
+
+        // const { password, ...userWithoutPassword } = user;
 
         res.status(200).json({
             msg:'Email validado correctamente',
-            userWithoutPassword    
+            user    
         })
 
     } catch (error) {
