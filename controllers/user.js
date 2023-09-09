@@ -101,9 +101,10 @@ const checkVerificationCode = async(req=request, res=response) => {
             }
         }).then( () => {
             prisma.emailVerification.deleteMany({where: {
-                email, verificationCode
+                email
             }})
         })
+
         res.status(200).json({
             msg:'Email validado correctamente',
             email    
