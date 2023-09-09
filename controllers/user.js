@@ -85,7 +85,6 @@ const checkVerificationCode = async(req=request, res=response) => {
         const check = await prisma.emailVerification.findFirst({where: {
             email, verificationCode
         }})
-        console.log(check);
         
 
         if (!check || check.expiresAt < Date.now()) {
@@ -99,12 +98,10 @@ const checkVerificationCode = async(req=request, res=response) => {
             data: {
                 emailVerified: true
             }
-        }).then( () => {
-            prisma.emailVerification.deleteMany({where: {
-                email
-            }})
         })
 
+        await prisma.emailVerification.deleteMany({where: {email}})
+           
         console.log(user, 'AQUI ESTA EL USUARIO');
 
         // const { password, ...userWithoutPassword } = user;
