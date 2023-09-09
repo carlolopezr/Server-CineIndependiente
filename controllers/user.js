@@ -106,9 +106,7 @@ const checkVerificationCode = async(req=request, res=response) => {
 
         const { password, updatedAt, createdAt, emailVerified, ...userNew } = user;
 
-        res.status(200).json({
-            userNew    
-        })
+        res.status(200).json(userNew)
 
     } catch (error) {
         res.status(400).json({
