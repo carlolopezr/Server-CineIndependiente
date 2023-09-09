@@ -104,11 +104,10 @@ const checkVerificationCode = async(req=request, res=response) => {
            
         console.log(user, 'AQUI ESTA EL USUARIO');
 
-        // const { password, ...userWithoutPassword } = user;
+        const { password, updatedAt, createdAt, emailVerified, ...userNew } = user;
 
         res.status(200).json({
-            msg:'Email validado correctamente',
-            user    
+            userNew    
         })
 
     } catch (error) {
