@@ -23,13 +23,16 @@ class Server {
 
     middlewares() {
 
-        this.app.use(cors({
-            origin: '*',
-            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-            preflightContinue: true,
-            optionsSuccessStatus: 204,
-            allowedHeaders: 'Access-Control-Request-Headers',
-        }));
+        const corsOptions = {
+            origin: '*', // Permitir solicitudes desde cualquier origen (cambia esto según tus necesidades)
+            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos permitidos
+            preflightContinue: true, // Habilitar solicitudes preflight
+            optionsSuccessStatus: 204, // Código de estado de éxito para las solicitudes OPTIONS
+            allowedHeaders: 'Access-Control-Request-Headers', // Encabezados permitidos para preflight
+        };
+
+        this.app.options('*', cors(corsOptions)); // Habilitar CORS para todas las rutas OPTIONS
+
 
         // Lectura y parseo del body
         this.app.use(express.json());
