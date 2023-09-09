@@ -25,11 +25,7 @@ class Server {
 
         // CORS
         this.app.options('*', cors())
-        this.app.use(cors({
-            origin:'*',
-            methods:['GET', 'PUT', 'POST', 'HEAD', 'PATCH', 'DELETE'],
-            allowedHeaders: ['Content-Type', 'Authorization']
-        }))
+        this.app.use(cors())
         
         // Lectura y parseo del body
         this.app.use(express.json());
