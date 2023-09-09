@@ -24,6 +24,7 @@ class Server {
     middlewares() {
 
         // CORS
+        this.app.options('*', cors())
         this.app.use(cors({
             allowedHeaders:'Access-Control-Request-Headers'
         }));
