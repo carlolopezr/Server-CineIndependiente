@@ -92,7 +92,7 @@ const checkVerificationCode = async(req=request, res=response) => {
             throw new Error('El código no es correcto o ha expirado')
         }
 
-        await prisma.user.update({
+        const user = await prisma.user.update({
             where: {
                 email:email
             },
@@ -105,9 +105,11 @@ const checkVerificationCode = async(req=request, res=response) => {
             }})
         })
 
+        const { password, ...userWithoutPassword } = user;
+
         res.status(200).json({
             msg:'Email validado correctamente',
-            email    
+            userWithoutPassword    
         })
 
     } catch (error) {
