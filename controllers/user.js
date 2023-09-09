@@ -44,6 +44,11 @@ const postUser =  async(req=request, res=response)=> {
 const requestEmailVerification = async(req=request, res=response) => {
     
     const { email } = req.body
+
+    if (!email) {
+        throw new Error('Se requiere un email')
+    }
+
     const verificationCode = crypto.randomInt(100000,999999)
     const emailVerification = {
         email,
@@ -51,6 +56,11 @@ const requestEmailVerification = async(req=request, res=response) => {
     }
 
     try {
+
+        await prisma.emailVerification.deleteMany({where: {
+            email
+        }})
+
         await prisma.emailVerification.create({data:emailVerification})
         await sendVerificationCode(emailVerification.email, emailVerification.verificationCode)
         res.status(200).json('Correo de verificación enviado correctamente')
