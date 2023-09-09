@@ -24,10 +24,13 @@ class Server {
     middlewares() {
 
         // CORS
-        
-        this.app.use(cors());
         this.app.options('*', cors())
-
+        this.app.use(cors({
+            origin:'*',
+            methods:['GET', 'PUT', 'POST', 'HEAD', 'PATCH', 'DELETE'],
+            allowedHeaders: ['Content-Type', 'Authorization']
+        }))
+        
         // Lectura y parseo del body
         this.app.use(express.json());
 
@@ -40,7 +43,6 @@ class Server {
             tempFileDir: '/tmp/',
             createParentPath: true
         }));
-
     }
 
     routes() {
