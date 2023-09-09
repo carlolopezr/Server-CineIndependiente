@@ -28,7 +28,7 @@ class Server {
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos permitidos
             preflightContinue: true, // Habilitar solicitudes preflight
             optionsSuccessStatus: 204, // Código de estado de éxito para las solicitudes OPTIONS
-            allowedHeaders: 'Access-Control-Request-Headers', // Encabezados permitidos para preflight
+            allowedHeaders: 'Access-Control-Request-Headers, Authorization, Content-Type', // Encabezados permitidos para preflight
         };
 
         this.app.options('*', cors(corsOptions)); // Habilitar CORS para todas las rutas OPTIONS
