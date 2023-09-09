@@ -23,14 +23,10 @@ class Server {
 
     middlewares() {
 
-        const corsOptions = {
-            origin: '*', // Permitir solicitudes desde cualquier origen
-            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos permitidos
-            preflightContinue: false, // No habilitar solicitudes preflight
-        };
-
-        this.app.use(cors(corsOptions)); // Habilitar CORS para todas las rutas OPTIONS
-
+        // CORS
+        
+        this.app.use(cors());
+        this.app.options('*', cors())
 
         // Lectura y parseo del body
         this.app.use(express.json());
