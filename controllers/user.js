@@ -36,7 +36,7 @@ const postUser =  async(req=request, res=response)=> {
         const { password, ...userWithoutPassword } = user;
         res.status(200).json(userWithoutPassword)
     } catch (error) {
-        res.status(400).json('No se pudo realizar la solicitud', error);
+        res.status(400).json({msg:'No se pudo realizar la solicitud'});
     }
     
 }
@@ -63,9 +63,9 @@ const requestEmailVerification = async(req=request, res=response) => {
 
         await prisma.emailVerification.create({data:emailVerification})
         await sendVerificationCode(emailVerification.email, emailVerification.verificationCode)
-        res.status(200).json('Correo de verificación enviado correctamente')
+        res.status(200).json({msg: 'Correo de verificación enviado correctamente'})
     } catch (error) {
-        res.status(400).json('No se pudo enviar el correo de verificación')
+        res.status(400).json({msg:'No se pudo enviar el correo de verificación'})
     } 
 } 
 
