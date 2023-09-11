@@ -23,12 +23,16 @@ const sendVerificationCode = async(email, verificationCode) => {
 
 const existingEmail = async(email) => {
     
-    const existingEmail = await prisma.user.findUnique({where: {
-        email:email,
-    }})
+    try {
+        const existingUser = await prisma.user.findUnique({ where: { email: email } });
 
-    if (existingEmail) {
-        throw new Error('El correo ingresado no es válido')
+        if (existingUser) {
+            throw new Error('El correo ingresado no es válido');
+        }
+    } catch (error) {
+        // Maneja el error de alguna manera, por ejemplo, registrándolo o devolviéndolo como una respuesta HTTP.
+        console.error(error);
+        throw error; // Esto puede ser opcional, dependiendo de cómo quieras manejar el error.
     }
 }
 

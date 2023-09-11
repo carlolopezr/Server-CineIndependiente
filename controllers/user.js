@@ -9,56 +9,6 @@ const getUser = async (req = request, res = response) => {
 	res.send('Hola Mundo');
 };
 
-const loginUser = async (req = request, res = response) => {
-	const { email, password } = req.body;
-
-	try {
-		const user = await prisma.user.findUnique({
-			where: {
-				email,
-			},
-		});
-
-		if (!user) {
-			return res.status(400).json({
-				ok: false,
-				msg: 'Email o contraseña incorrectos',
-			});
-		}
-
-		//Confirmar contraseñas
-		const isValidPassword = bcryptjs.compareSync(password, user.password);
-
-		if (!isValidPassword) {
-			return res.status(400).json({
-				ok: false,
-				msg: 'Email o contraseña incorrectos',
-			});
-		}
-
-		//Generar token
-		const token = await generateJWT(user.id, user.name);
-
-		const loggedUser = {
-			id: user.id,
-			name: user.name,
-			email: user.email,
-			lastname: user.lastname,
-			emailVerified: user.emailVerified,
-		};
-
-		res.json({
-			ok: true,
-			user: loggedUser,
-			token,
-		});
-	} catch (error) {
-		res.status(500).json({
-			ok: false,
-			msg: 'Hubo un problema en el servidor, intentelo de nuevo más tarde',
-		});
-	}
-};
 
 const postUser = async (req = request, res = response) => {
 	const { email, name, lastname, password } = req.body;
@@ -83,7 +33,7 @@ const postUser = async (req = request, res = response) => {
 	user.password = bcryptjs.hashSync(user.password, salt);
 
 	try {
-		existingEmail(user.email);
+		await existingEmail(user.email)
 
 		const createdUser = await prisma.user.create({ data: user });
 
@@ -193,7 +143,7 @@ const checkVerificationCode = async (req = request, res = response) => {
 		});
 
 		if (!check || check.expiresAt < Date.now()) {
-			return res.status(400).json({
+			return res.status(404).json({
 				msg: 'El código no es correcto o ha expirado',
 			});
 		}
@@ -252,7 +202,6 @@ const validatePassword = password => {
 
 module.exports = {
 	getUser,
-	loginUser,
 	postUser,
 	revalidateToken,
 	getUsers,
