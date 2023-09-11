@@ -12,7 +12,6 @@ const transporter = createTransport({
 
 const sendVerificationCode = async(email, verificationCode) => {
     
-    console.log(verificationCode);
     await transporter.sendMail({
         from:'clopez9518@gmail.com',
         to: email,
