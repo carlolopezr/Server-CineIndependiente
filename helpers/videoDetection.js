@@ -1,7 +1,9 @@
 const video = require('@google-cloud/video-intelligence').v1;
 const {secondsToMins } = require('./secondsToMins')
-const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-const client = new video.VideoIntelligenceServiceClient({keyFilename:credentialsPath});
+const credentials = JSON.parse(
+  Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS, "base64").toString()
+);
+const client = new video.VideoIntelligenceServiceClient({credentials});
 
 const likelihoods = [
   'UNKNOWN',
