@@ -12,7 +12,7 @@ datasource db {
 }
 
 model User {
-  id    Int      @id @default(autoincrement())
+  user_id String @id @default(uuid())
   email String   @unique
   name  String
   lastname String
@@ -20,9 +20,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   emailVerified Boolean
+  avatarUrl String?
+  movies Movie[]
 }
 
-model emailVerification {
+model EmailVerification {
   id Int @id @default(autoincrement())
   email String
   verificationCode Int
@@ -30,3 +32,90 @@ model emailVerification {
   expiresAt DateTime @default(dbgenerated("(NOW() + INTERVAL 10 MINUTE)"))
 }
 
+model Genre {
+  genre_id String @id @default(uuid())
+  name String
+  movies GenresOnMovies[]
+}
+
+model GenresOnMovies {
+  genre Genre @relation(fields: [genre_id], references: [genre_id])
+  genre_id String
+  movie Movie @relation(fields: [movie_id], references: [movie_id])
+  movie_id String
+  assignedAt DateTime @default(now())
+  @@id([genre_id, movie_id])
+  @@index([genre_id])
+  @@index([movie_id])
+}
+
+model Director {
+  director_id String @id @default(uuid())
+  name String
+  movies DirectorsOnMovies[]
+}
+
+model DirectorsOnMovies {
+  director Director @relation(fields: [director_id], references: [director_id])
+  director_id String
+  movie Movie @relation(fields: [movie_id], references: [movie_id])
+  movie_id String
+  assignedAt DateTime @default(now())
+  @@id([director_id, movie_id])
+  @@index([director_id])
+  @@index([movie_id])
+}
+
+model Writer {
+  writer_id String @id @default(uuid())
+  name String
+  movies WritersOnMovies[]
+}
+
+model WritersOnMovies {
+  writer Writer @relation(fields: [writer_id], references: [writer_id])
+  writer_id String
+  movie Movie @relation(fields: [movie_id], references: [movie_id])
+  movie_id String
+  assignedAt DateTime @default(now())
+  @@id([writer_id, movie_id])
+  @@index([writer_id])
+  @@index([movie_id])
+}
+
+model Actor {
+  actor_id String @id @default(uuid())
+  name String
+  movies ActorsOnMovies[]
+}
+
+model ActorsOnMovies {
+  actor Actor @relation(fields: [actor_id], references: [actor_id])
+  actor_id String
+  movie Movie @relation(fields: [movie_id], references: [movie_id])
+  movie_id String
+  assignedAt DateTime @default(now())
+  @@id([actor_id, movie_id])
+  @@index([actor_id])
+  @@index([movie_id])
+}
+
+model Movie {
+  movie_id String @id @default(uuid())
+  date Int
+  title String
+  productionYear Int
+  movieUrl String?
+  synopsis String
+  directors DirectorsOnMovies[]
+  writers WritersOnMovies[]
+  cast ActorsOnMovies[]
+  genres GenresOnMovies[]
+  user User @relation(fields: [user_id], references: [user_id])
+  user_id String   
+  enabled Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([user_id])
+}

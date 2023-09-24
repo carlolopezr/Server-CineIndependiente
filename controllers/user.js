@@ -9,7 +9,6 @@ const getUser = async (req = request, res = response) => {
 	res.send('Hola Mundo');
 };
 
-
 const postUser = async (req = request, res = response) => {
 	const { email, name, lastname, password } = req.body;
 
@@ -33,16 +32,16 @@ const postUser = async (req = request, res = response) => {
 	user.password = bcryptjs.hashSync(user.password, salt);
 
 	try {
-		await existingEmail(user.email)
+		await existingEmail(user.email);
 
 		const createdUser = await prisma.user.create({ data: user });
 
 		//Generar token
-		const token = await generateJWT(createdUser.id, createdUser.name);
+		const token = await generateJWT(createdUser.user_id, createdUser.name);
 		const { password, updatedAt, createdAt, ...userNew } = createdUser;
 
 		const loggedUser = {
-			id: createdUser.id,
+			user_id: createdUser.user_id,
 			name: createdUser.name,
 			lastname: createdUser.lastname,
 			email: createdUser.email,
@@ -115,10 +114,10 @@ const loginUser = async (req = request, res = response) => {
 		}
 
 		//Generar token
-		const token = await generateJWT(user.id, user.name);
+		const token = await generateJWT(user.user_id, user.name);
 
 		const loggedUser = {
-			id: user.id,
+			user_id: user.user_id,
 			name: user.name,
 			email: user.email,
 			lastname: user.lastname,
@@ -139,13 +138,13 @@ const loginUser = async (req = request, res = response) => {
 };
 
 const revalidateToken = async (req = request, res = response) => {
-	const { id, name } = req;
-	const token = await generateJWT(id, name);
+	const { user_id, name } = req;
+	const token = await generateJWT(user_id, name);
 
 	try {
 		const user = await prisma.user.findUnique({
 			where: {
-				id,
+				user_id,
 			},
 		});
 
@@ -157,7 +156,7 @@ const revalidateToken = async (req = request, res = response) => {
 		}
 
 		const loggedUser = {
-			id: user.id,
+			user_id: user.user_id,
 			name: user.name,
 			email: user.email,
 			lastname: user.lastname,
@@ -212,7 +211,7 @@ const checkVerificationCode = async (req = request, res = response) => {
 
 		//!Generar token para logear al usuario
 
-		const token = await generateJWT(user.id, user.name);
+		const token = await generateJWT(user.user_id, user.name);
 
 		const { password, updatedAt, createdAt, ...userNew } = user;
 
@@ -258,5 +257,5 @@ module.exports = {
 	getUsers,
 	requestEmailVerification,
 	checkVerificationCode,
-    loginUser
+	loginUser,
 };
