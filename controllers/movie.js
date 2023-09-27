@@ -1,9 +1,55 @@
 const { request, response } = require('express');
 const { prisma } = require('../database/config');
 
-const postMovie = (req = request, res = response) => {
+const postMovie = async (req = request, res = response) => {
 	const { movie, directors, writers, cast, genres } = req.body;
-	console.log(movie, directors, writers, cast, genres);
+
+	const genresWithId = genres.map(genre => ({
+		genre_id: genre,
+	}));
+
+	try {
+		const createdMovie = await prisma.movie.create({
+			data: {
+				...movie,
+				cast: {
+					create: cast,
+				},
+				writers: {
+					create: writers,
+				},
+				directors: {
+					create: directors,
+				},
+				genres: {
+					connect: genresWithId,
+				},
+			},
+		});
+		res.status(201).json(createdMovie);
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: 'Ocurrio un error al guardar la información de la película',
+		});
+	}
+};
+
+const getAllMovies = async (req = request, res = response) => {
+	try {
+		const movies = await prisma.movie.findMany();
+		if (!movies || movies.length === 0) {
+			return res.status(404).json({
+				msg: 'No se encontraron películas',
+			});
+		}
+		res.status(200).json(movies);
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: 'Hubo un error al obtener las películas',
+		});
+	}
 };
 
 const postGenre = async (req = request, res = response) => {
@@ -30,6 +76,11 @@ const postGenre = async (req = request, res = response) => {
 const getAllGenres = async (req = request, res = response) => {
 	try {
 		const genres = await prisma.genre.findMany();
+		if (!genres || genres.length === 0) {
+			return res.status(404).json({
+				msg: 'No se encontraron géneros',
+			});
+		}
 		res.status(200).json(genres);
 	} catch (error) {
 		res.status(500).json({
@@ -42,4 +93,5 @@ module.exports = {
 	postMovie,
 	postGenre,
 	getAllGenres,
+	getAllMovies,
 };
