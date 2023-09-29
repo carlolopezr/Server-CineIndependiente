@@ -64,6 +64,7 @@ model Movie {
   synopsis       String     @db.Text
   user_id        String
   enabled        Boolean
+  explicitContent Boolean
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   directors      Director[]

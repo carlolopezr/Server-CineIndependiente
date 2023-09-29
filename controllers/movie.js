@@ -35,6 +35,35 @@ const postMovie = async (req = request, res = response) => {
 	}
 };
 
+const updateMovie = async(req = request, res = response) => {
+
+	try {
+		const { date, user_id, data } = req.body
+		const updateMovie = await prisma.movie.updateMany({
+			where: {
+				date: date,
+				user_id: user_id
+			},
+			data: data
+		})
+		.catch((err) => {
+			res.status(400).json({
+				msg:`Hubo un error al intentar encontrar la película en la base de datos: ${err}`
+			})
+		})
+
+		res.status(200).json({
+			msg:'Película actualizada correctamente',
+			updateMovie
+		})
+
+	} catch (error) {
+		res.status(500).json({
+			msg:`Hubo un error al intentar actualizar la película: ${error}`
+		})
+	}
+}
+
 const getAllMovies = async (req = request, res = response) => {
 	try {
 		const movies = await prisma.movie.findMany();
@@ -94,4 +123,5 @@ module.exports = {
 	postGenre,
 	getAllGenres,
 	getAllMovies,
+	updateMovie
 };

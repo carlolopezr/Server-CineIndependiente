@@ -1,11 +1,14 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
-const { postGenre, getAllGenres, postMovie, getAllMovies } = require('../controllers/movie');
+const { postGenre, getAllGenres, postMovie, getAllMovies, updateMovie } = require('../controllers/movie');
 const { validarCampos } = require('../middlewares/validarCampos');
 
 const router = Router();
 
-router.post('/', postMovie);
+router.post('/', [
+	body('genres', 'Por favor ingrese al menos 1 género').not().isEmpty(),
+	validarCampos
+], postMovie);
 
 router.get('/get-movies', getAllMovies);
 
@@ -17,5 +20,12 @@ router.post(
 );
 
 router.get('/get-genres', getAllGenres);
+
+router.put('/update-movie',[
+	body('date', 'Falta la fecha en la solicitud').not().isEmpty(),
+	body('user_id', 'Falta el user_id').not().isEmpty(),
+	body('data', 'Falta la data en la solicitud').not().isEmpty(),
+	validarCampos
+] ,updateMovie)
 
 module.exports = router;
