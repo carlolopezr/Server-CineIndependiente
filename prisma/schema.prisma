@@ -38,23 +38,30 @@ model Genre {
 model Director {
   director_id String  @id @default(uuid())
   name        String
-  movies      Movie[]
+  movie_id  String
+  movie     Movie   @relation(fields: [movie_id], references: [movie_id])
+  @@index([movie_id])
 }
 
 model Writer {
   writer_id String  @id @default(uuid())
   name      String
-  movies    Movie[]
+  movie_id  String
+  movie     Movie   @relation(fields: [movie_id], references: [movie_id])
+  @@index([movie_id])
 }
 
 model Actor {
   actor_id String  @id @default(uuid())
   name     String
-  movies   Movie[]
+  movie_id String
+  movie    Movie   @relation(fields: [movie_id], references: [movie_id])
+  @@index([movie_id])
 }
 
 model Movie {
   movie_id       String     @id @default(uuid())
+  user_id_date   String     @unique
   thumbnailUrl   String?
   imageUrl       String?
   date           String

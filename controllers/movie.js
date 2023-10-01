@@ -13,13 +13,19 @@ const postMovie = async (req = request, res = response) => {
 			data: {
 				...movie,
 				cast: {
-					create: cast,
+					createMany: {
+						data: cast,
+					},
 				},
 				writers: {
-					create: writers,
+					createMany: {
+						data: writers,
+					},
 				},
 				directors: {
-					create: directors,
+					createMany: {
+						data: directors,
+					},
 				},
 				genres: {
 					connect: genresWithId,
@@ -45,6 +51,7 @@ const updateMovie = async(req = request, res = response) => {
 				user_id: user_id
 			},
 			data: data
+
 		})
 		.catch((err) => {
 			res.status(400).json({
@@ -63,6 +70,113 @@ const updateMovie = async(req = request, res = response) => {
 		})
 	}
 }
+
+const updateFakeMovie = async (req = request, res = response) => {
+	try {
+		const { movie, directors, writers, cast, genres } = req.body;
+
+		delete movie.user_id;
+
+		const genresWithId = genres.map(genre => ({
+			genre_id: genre,
+		}));
+
+		await prisma.movie.update({
+			where: {
+				user_id_date: movie.user_id_date,
+			},
+			data: {
+				directors: {
+					deleteMany: {},
+				},
+				cast: {
+					deleteMany: {},
+				},
+				writers: {
+					deleteMany: {},
+				},
+				genres: {
+					set: [],
+				},
+			},
+		});
+
+		const updatedMovie = await prisma.movie.update({
+			where: {
+				user_id_date: movie.user_id_date,
+			},
+			data: {
+				...movie,
+				cast: {
+					createMany: {
+						data: cast,
+					},
+				},
+				writers: {
+					createMany: {
+						data: writers,
+					},
+				},
+				directors: {
+					createMany: {
+						data: directors,
+					},
+				},
+				genres: {
+					connect: genresWithId,
+				},
+			},
+		});
+
+		if (!updatedMovie) {
+			return res.status(404).json({
+				msg: 'Hubo un error al intentar encontrar la película en la base de datos',
+			});
+		}
+
+		res.status(200).json({
+			msg: 'Película actualizada correctamente',
+			updateMovie: updatedMovie,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: `Hubo un error al intentar actualizar la película: ${error}`,
+		});
+	}
+};
+
+const getMovie = async (req = request, res = response) => {
+	const id = req.params.id;
+
+	if (!id) {
+		return res.status(400).json({
+			msg: 'No hay id de la película',
+		});
+	}
+
+	try {
+		const movie = await prisma.movie.findUnique({
+			where: {
+				movie_id: id,
+			},
+		});
+
+		if (!movie) {
+			return res.status(404).json({
+				msg: 'Película no encontrada',
+			});
+		}
+
+		res.status(200).json({
+			movie,
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Hubo un error al encontrar la película',
+		});
+	}
+};
 
 const getAllMovies = async (req = request, res = response) => {
 	try {
@@ -102,6 +216,56 @@ const postGenre = async (req = request, res = response) => {
 	}
 };
 
+//!Semilla
+const postGenres = async (req = request, res = response) => {
+	try {
+		const createdGenres = await prisma.genre.createMany({
+			data: [
+				{
+					name: 'Fantasía y Ciencia ficción',
+				},
+				{
+					name: 'Romance',
+				},
+				{
+					name: 'Cortos',
+				},
+				{
+					name: 'Anime',
+				},
+				{
+					name: 'Documentales',
+				},
+				{
+					name: 'Terror y Suspenso',
+				},
+				{
+					name: 'Comedia',
+				},
+				{
+					name: 'Crimen',
+				},
+				{
+					name: 'Acción',
+				},
+				{
+					name: 'Deportes',
+				},
+				{
+					name: 'Animación',
+				},
+			],
+		});
+		res.status(201).json({
+			createdGenres,
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Hubo un error al guardar los géneros',
+		});
+	}
+};
+
 const getAllGenres = async (req = request, res = response) => {
 	try {
 		const genres = await prisma.genre.findMany();
@@ -118,10 +282,15 @@ const getAllGenres = async (req = request, res = response) => {
 	}
 };
 
+
+
 module.exports = {
 	postMovie,
 	postGenre,
 	getAllGenres,
 	getAllMovies,
-	updateMovie
+	updateMovie,
+	getMovie,
+	updateFakeMovie,
+	postGenres
 };

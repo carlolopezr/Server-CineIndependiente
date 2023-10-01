@@ -4,6 +4,7 @@ const bcryptjs = require('bcryptjs');
 const crypto = require('crypto');
 const { sendVerificationCode, existingEmail } = require('../helpers/emails');
 const { generateJWT } = require('../helpers/generateJWT');
+const { notificationEmail } = require('../helpers/emails');
 
 const getUser = async (req = request, res = response) => {
 	res.send('Hola Mundo');
@@ -250,6 +251,21 @@ const validatePassword = password => {
 	return errors;
 };
 
+const sendNotificationEmail = async(req=request, res=response) => {
+
+    try {
+        const {email, subject, text} = req.body;
+        await notificationEmail(email, subject, text)
+        return res.status(200).json({
+            msg:'Correo de notificación enviado con éxito'
+        })
+    } catch (error) {
+        return res.status(500).json({
+            msg:'Hubo un error al enviar el correo de notificación'
+        })
+    }
+}
+
 module.exports = {
 	getUser,
 	postUser,
@@ -258,4 +274,5 @@ module.exports = {
 	requestEmailVerification,
 	checkVerificationCode,
 	loginUser,
+	sendNotificationEmail
 };

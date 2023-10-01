@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { getUser, postUser, getUsers, 
-    requestEmailVerification, checkVerificationCode, revalidateToken, loginUser} = require('../controllers/user');
+    requestEmailVerification, checkVerificationCode, revalidateToken, loginUser, sendNotificationEmail} = require('../controllers/user');
 const { validateJWT } = require('../middlewares/validateJWT');
 const { body } = require('express-validator');
 const { validarCampos } = require('../middlewares/validarCampos');
@@ -42,5 +42,11 @@ router.post('/checkVerificationCode',[
     validarCampos
 ] , checkVerificationCode)
 
+router.post('/send-notification-email', [
+    body('email', 'Falta el correo en la solicitud').not().isEmpty(),
+    body('subject', 'Falta el subject en la solicitud').not().isEmpty(),
+    body('text', 'Falta el mensaje en la solicitud').not().isEmpty(),
+    validarCampos
+], sendNotificationEmail)
 
 module.exports = router;

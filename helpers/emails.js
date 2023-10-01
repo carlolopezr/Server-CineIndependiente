@@ -11,12 +11,50 @@ const transporter = createTransport({
 })
 
 const sendVerificationCode = async(email, verificationCode) => {
-    
+
+    const gradientBackground = `
+            background: linear-gradient(to right, #2A0541, #870AB2);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        `;
+
+    const titleStyle = `
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    `;
+
+    const messageStyle = `
+        font-size: 18px;
+        margin-bottom: 20px;
+    `;
+
+    const rectangleStyle = `
+        background-color: #f4f4f4;
+        padding: 10px;
+        border-radius: 5px;
+        display: inline-block;
+    `;
+
+    const htmlContent = `
+        <html>
+            <body style="${gradientBackground}">
+                <div style="${titleStyle}">Gracias por registrarte!</div>
+                <p style="${messageStyle}">Bienvenido a cine-independiente. Este es tu código de verificación:</p>
+                <div style="${rectangleStyle}">
+                    <h3 style="color: #007bff; margin: 0;">${verificationCode}</h3>
+                </div>
+                <p>¡Gracias por utilizar nuestro servicio!</p>
+            </body>
+        </html>
+    `;
+
     await transporter.sendMail({
-        from:'clopez9518@gmail.com',
+        from:'noreply-cineindependiente <noreplycineindependiente@gmail.com>',
         to: email,
         subject:'Tu código de verificación',
-        text:`Este es tu código de verificación ${verificationCode}`
+        html:htmlContent
     })
 }
 
@@ -36,9 +74,25 @@ const existingEmail = async(email) => {
     }
 }
 
+const notificationEmail = async (email, subject, text) => {
+    
+    try { 
+        await transporter.sendMail({
+            from: 'noreply-cineindependiente <noreplycineindependiente@gmail.com>',
+            to: email,
+            subject: subject,
+            text:text
+        });
+        return 'Mensaje enviado con éxito';
+    } catch (error) {
+        throw new Error('Error al enviar el correo: ' + error.message);
+    }
+};
+
 
 module.exports = {
     transporter,
     sendVerificationCode,
-    existingEmail
+    existingEmail,
+    notificationEmail
 }
