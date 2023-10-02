@@ -31,10 +31,10 @@ router.put('/update-movie',[
 ] ,updateMovie)
 
 router.post('/save-watch-history',[
-	body('user_id', 'Falta el user_id').not().isEmpty(),
-	body('movie_id', 'Falta el movie_id').not().isEmpty(),
-	body('currentTime', 'Falta el currentTime').not().isEmpty(),
-	validarCampos
+	// body('user_id', 'Falta el user_id').not().isEmpty(),
+	// body('movie_id', 'Falta el movie_id').not().isEmpty(),
+	// body('currentTime', 'Falta el currentTime').not().isEmpty(),
+	// validarCampos
 ] , postWatchHistory)
 
 router.put('/update-first-movie', [], updateFakeMovie);
