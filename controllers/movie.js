@@ -287,17 +287,6 @@ const postWatchHistory = async(req=request, res=response ) => {
 	try {
 		const { currentTime, user_id, movie_id} = req.body
 
-		const asd = prisma.watchHistory.upsert({
-			where: {
-				user_id_movie_id: {
-					user_id:user_id,
-					movie_id:movie_id
-				},
-			},
-			update: {
-
-			}
-		})
 		const updatedWatchHistory = await prisma.watchHistory.upsert({
 			where: {
 				user_id_movie_id: {
