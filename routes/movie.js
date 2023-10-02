@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
-const { postGenre, getAllGenres, postMovie, getAllMovies, updateMovie, updateFakeMovie, postGenres, getMovie } = require('../controllers/movie');
+const { postGenre, getAllGenres, postMovie, getAllMovies, updateMovie, updateFakeMovie, postGenres, getMovie, postWatchHistory } = require('../controllers/movie');
 const { validarCampos } = require('../middlewares/validarCampos');
 
 const router = Router();
@@ -29,6 +29,13 @@ router.put('/update-movie',[
 	body('data', 'Falta la data en la solicitud').not().isEmpty(),
 	validarCampos
 ] ,updateMovie)
+
+router.post('/save-watch-history',[
+	body('user_id', 'Falta el user_id').not().isEmpty(),
+	body('movie_id', 'Falta el movie_id').not().isEmpty(),
+	body('currentTime', 'Falta el currentTime').not().isEmpty(),
+	validarCampos
+] , postWatchHistory)
 
 router.put('/update-first-movie', [], updateFakeMovie);
 

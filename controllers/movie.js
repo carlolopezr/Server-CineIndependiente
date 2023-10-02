@@ -282,6 +282,42 @@ const getAllGenres = async (req = request, res = response) => {
 	}
 };
 
+const postWatchHistory = async(req=request, res=response ) => {
+
+	try {
+		const { currentTime, user_id, movie_id} = req.body
+
+		const updatedWatchHistory = await prisma.watchHistory.upsert({
+			where: {
+				user_id_movie_id: {
+					user_id:user_id,
+					movie_id:movie_id
+				},
+			},
+			update: {
+				viewingTime: currentTime
+			},
+			create: {
+				user:{ connect: {user_id:user_id} },
+				movie: { connect: {movie_id:movie_id}},
+				currentTime: currentTime
+			}
+		})
+
+		console.log(updatedWatchHistory);
+		res.status(200).json({
+			msg:'Historial guardado con éxito',
+			updatedWatchHistory
+		})
+
+	} catch (error) {
+
+		console.log(error);
+		res.status(500).json({
+			msg:`Ha ocurrido un error: ${error}`
+		})
+	}
+}
 
 
 module.exports = {
@@ -292,5 +328,6 @@ module.exports = {
 	updateMovie,
 	getMovie,
 	updateFakeMovie,
-	postGenres
+	postGenres,
+	postWatchHistory
 };

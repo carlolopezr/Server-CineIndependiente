@@ -18,6 +18,7 @@ model User {
   updatedAt     DateTime @updatedAt
   emailVerified Boolean
   avatarUrl     String?
+  moviesHistory WatchHistory[]
   movies        Movie[]
 }
 
@@ -59,6 +60,19 @@ model Actor {
   @@index([movie_id])
 }
 
+model WatchHistory {
+  user User @relation(fields:[user_id], references: [user_id])
+  user_id String
+  movie Movie @relation(fields:[movie_id], references: [movie_id])
+  movie_id String
+  viewingTime Float
+  updatedAt      DateTime   @updatedAt
+
+  @@id([user_id, movie_id])
+  @@index([user_id])
+  @@index([movie_id])
+}
+
 model Movie {
   movie_id       String     @id @default(uuid())
   user_id_date   String     @unique
@@ -78,6 +92,7 @@ model Movie {
   writers        Writer[]
   cast           Actor[]
   genres         Genre[]
+  users          WatchHistory[]
   user           User       @relation(fields: [user_id], references: [user_id])
 
   @@index([user_id])
