@@ -304,18 +304,8 @@ const postWatchHistory = async(req=request, res=response ) => {
 			}
 		})
 
-		console.log(updatedWatchHistory);
-		res.status(200).json({
-			msg:'Historial guardado con éxito',
-			updatedWatchHistory
-		})
-
 	} catch (error) {
-
 		console.log(error);
-		res.status(500).json({
-			msg:`Ha ocurrido un error: ${error}`
-		})
 	}
 }
 
