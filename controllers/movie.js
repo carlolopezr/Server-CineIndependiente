@@ -180,7 +180,12 @@ const getMovie = async (req = request, res = response) => {
 
 const getAllMovies = async (req = request, res = response) => {
 	try {
-		const movies = await prisma.movie.findMany();
+		const movies = await prisma.movie.findMany({
+			where: {
+				enabled:true,
+				explicitContent: false
+			}
+		});
 		if (!movies || movies.length === 0) {
 			return res.status(404).json({
 				msg: 'No se encontraron películas',
