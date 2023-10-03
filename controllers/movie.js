@@ -183,7 +183,10 @@ const getAllMovies = async (req = request, res = response) => {
 		const movies = await prisma.movie.findMany({
 			where: {
 				enabled:true,
-				explicitContent: false
+				explicitContent: false,
+				movieUrl: {
+					not: null
+				}
 			}
 		});
 		if (!movies || movies.length === 0) {
