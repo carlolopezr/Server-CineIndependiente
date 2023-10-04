@@ -186,7 +186,10 @@ const getAllMovies = async (req = request, res = response) => {
 				explicitContent: false,
 				movieUrl: {
 					not: null
-				}
+				},
+				productionYear: {
+					not:0
+				},
 			}
 		});
 		if (!movies || movies.length === 0) {
