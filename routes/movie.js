@@ -1,16 +1,33 @@
 const { Router } = require('express');
-const { body } = require('express-validator');
-const { postGenre, getAllGenres, postMovie, getAllMovies, updateMovie, updateFakeMovie, postGenres, getMovie, postWatchHistory } = require('../controllers/movie');
+const { body, check } = require('express-validator');
+const {
+	postGenre,
+	getAllGenres,
+	postMovie,
+	getAllMovies,
+	updateMovie,
+	updateFakeMovie,
+	postGenres,
+	getMovie,
+	postWatchHistory,
+	deleteMovie,
+} = require('../controllers/movie');
 const { validarCampos } = require('../middlewares/validarCampos');
 
 const router = Router();
 
-router.post('/', [
-	body('genres', 'Por favor ingrese al menos 1 género').not().isEmpty(),
-	validarCampos
-], postMovie);
+router.post(
+	'/',
+	[body('genres', 'Por favor ingrese al menos 1 género').not().isEmpty(), validarCampos],
+	postMovie
+);
 
 router.get('/movie/:id', getMovie);
+router.delete(
+	'/movie/:id',
+	[check('id', 'Falta el id en la solicitud').not().isEmpty(), validarCampos],
+	deleteMovie
+);
 
 router.get('/get-movies', getAllMovies);
 
@@ -23,19 +40,18 @@ router.post(
 
 router.get('/get-genres', getAllGenres);
 
-router.put('/update-movie',[
-	body('date', 'Falta la fecha en la solicitud').not().isEmpty(),
-	body('user_id', 'Falta el user_id').not().isEmpty(),
-	body('data', 'Falta la data en la solicitud').not().isEmpty(),
-	validarCampos
-] ,updateMovie)
+router.put(
+	'/update-movie',
+	[
+		body('date', 'Falta la fecha en la solicitud').not().isEmpty(),
+		body('user_id', 'Falta el user_id').not().isEmpty(),
+		body('data', 'Falta la data en la solicitud').not().isEmpty(),
+		validarCampos,
+	],
+	updateMovie
+);
 
-router.post('/save-watch-history',[
-	body('user_id', 'Falta el user_id').not().isEmpty(),
-	body('movie_id', 'Falta el movie_id').not().isEmpty(),
-	body('currentTime', 'Falta el currentTime').not().isEmpty(),
-	validarCampos
-] , postWatchHistory)
+router.post('/save-watch-history', [], postWatchHistory);
 
 router.put('/update-first-movie', [], updateFakeMovie);
 

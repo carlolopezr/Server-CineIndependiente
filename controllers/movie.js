@@ -1,5 +1,6 @@
 const { request, response } = require('express');
 const { prisma } = require('../database/config');
+const { recoverFromNotFound } = require('../helpers/recoverFromNotFound');
 
 const postMovie = async (req = request, res = response) => {
 	const { movie, directors, writers, cast, genres } = req.body;
@@ -32,7 +33,7 @@ const postMovie = async (req = request, res = response) => {
 				},
 			},
 		});
-		res.status(201).json(createdMovie);
+		res.status(201).json({ createdMovie });
 	} catch (error) {
 		console.log(error);
 		res.status(500).json({
@@ -41,49 +42,41 @@ const postMovie = async (req = request, res = response) => {
 	}
 };
 
-const updateMovie = async(req = request, res = response) => {
-
+const updateMovie = async (req = request, res = response) => {
 	try {
-		const { date, user_id, data } = req.body
-		const updateMovie = await prisma.movie.updateMany({
-			where: {
-				date: date,
-				user_id: user_id
-			},
-			data: data
-
-		})
-		.catch((err) => {
-			res.status(400).json({
-				msg:`Hubo un error al intentar encontrar la película en la base de datos: ${err}`
+		const { date, user_id, data } = req.body;
+		const updateMovie = await prisma.movie
+			.updateMany({
+				where: {
+					date: date,
+					user_id: user_id,
+				},
+				data: data,
 			})
-		})
+			.catch(err => {
+				res.status(400).json({
+					msg: `Hubo un error al intentar encontrar la película en la base de datos: ${err}`,
+				});
+			});
 
 		res.status(200).json({
-			msg:'Película actualizada correctamente',
-			updateMovie
-		})
-
+			msg: 'Película actualizada correctamente',
+			updateMovie,
+		});
 	} catch (error) {
 		res.status(500).json({
-			msg:`Hubo un error al intentar actualizar la película: ${error}`
-		})
+			msg: `Hubo un error al intentar actualizar la película: ${error}`,
+		});
 	}
-}
+};
 
-const updateFakeMovie = async (req = request, res = response) => {
+const deleteMovie = async (req = request, res = response) => {
+	const id = req.params.id;
+
 	try {
-		const { movie, directors, writers, cast, genres } = req.body;
-
-		delete movie.user_id;
-
-		const genresWithId = genres.map(genre => ({
-			genre_id: genre,
-		}));
-
 		await prisma.movie.update({
 			where: {
-				user_id_date: movie.user_id_date,
+				movie_id: id,
 			},
 			data: {
 				directors: {
@@ -100,6 +93,62 @@ const updateFakeMovie = async (req = request, res = response) => {
 				},
 			},
 		});
+
+		const deletedMovie = await prisma.movie.delete({
+			where: {
+				movie_id: id,
+			},
+		});
+
+		res.status(200).json({
+			msg: 'Película eliminada correctamente',
+			deletedMovie,
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'No se pudo eliminar la película',
+			error,
+		});
+	}
+};
+
+const updateFakeMovie = async (req = request, res = response) => {
+	try {
+		const { movie, directors, writers, cast, genres } = req.body;
+
+		delete movie.user_id;
+
+		const genresWithId = genres.map(genre => ({
+			genre_id: genre,
+		}));
+
+		const updatedFakeMovie = await recoverFromNotFound(
+			prisma.movie.update({
+				where: {
+					user_id_date: movie.user_id_date,
+				},
+				data: {
+					directors: {
+						deleteMany: {},
+					},
+					cast: {
+						deleteMany: {},
+					},
+					writers: {
+						deleteMany: {},
+					},
+					genres: {
+						set: [],
+					},
+				},
+			})
+		);
+
+		if (!updatedFakeMovie) {
+			return res.status(404).json({
+				msg: 'Error al intentar guardar la película',
+			});
+		}
 
 		const updatedMovie = await prisma.movie.update({
 			where: {
@@ -135,13 +184,12 @@ const updateFakeMovie = async (req = request, res = response) => {
 		}
 
 		res.status(200).json({
-			msg: 'Película actualizada correctamente',
+			msg: 'Película guardada correctamente',
 			updateMovie: updatedMovie,
 		});
 	} catch (error) {
-		console.log(error);
 		res.status(500).json({
-			msg: `Hubo un error al intentar actualizar la película: ${error}`,
+			msg: `Hubo un error al intentar guardar la película`,
 		});
 	}
 };
@@ -282,43 +330,41 @@ const getAllGenres = async (req = request, res = response) => {
 	}
 };
 
-const postWatchHistory = async(req=request, res=response ) => {
-
+const postWatchHistory = async (req = request, res = response) => {
 	try {
-		const { currentTime, user_id, movie_id} = req.body
+		const { currentTime, user_id, movie_id } = req.body;
 
+		const newCurrentTime = Number(currentTime);
+		console.log(currentTime, user_id, movie_id);
 		const updatedWatchHistory = await prisma.watchHistory.upsert({
 			where: {
 				user_id_movie_id: {
-					user_id:user_id,
-					movie_id:movie_id
+					user_id: user_id,
+					movie_id: movie_id,
 				},
 			},
 			update: {
-				viewingTime: currentTime
+				viewingTime: newCurrentTime,
 			},
 			create: {
-				user:{ connect: {user_id:user_id} },
-				movie: { connect: {movie_id:movie_id}},
-				viewingTime: currentTime
-			}
-		})
+				user: { connect: { user_id: user_id } },
+				movie: { connect: { movie_id: movie_id } },
+				viewingTime: newCurrentTime,
+			},
+		});
 
 		console.log(updatedWatchHistory);
 		res.status(200).json({
-			msg:'Historial guardado con éxito',
-			updatedWatchHistory
-		})
-
+			msg: 'Historial guardado con éxito',
+			updatedWatchHistory,
+		});
 	} catch (error) {
-
 		console.log(error);
 		res.status(500).json({
-			msg:`Ha ocurrido un error: ${error}`
-		})
+			msg: `Ha ocurrido un error: ${error}`,
+		});
 	}
-}
-
+};
 
 module.exports = {
 	postMovie,
@@ -329,5 +375,6 @@ module.exports = {
 	getMovie,
 	updateFakeMovie,
 	postGenres,
-	postWatchHistory
+	postWatchHistory,
+	deleteMovie,
 };
