@@ -288,7 +288,6 @@ const getAllMovies = async (req = request, res = response) => {
 
 const getMoviesByGenre = async (req = request, res = response) => {
 	const id = req.params.id || '';
-	console.log(id);
 	try {
 		const movies = await prisma.movie.findMany({
 			where: {
@@ -304,7 +303,6 @@ const getMoviesByGenre = async (req = request, res = response) => {
 				msg: 'No se encontraron películas',
 			});
 		}
-		console.log(movies);
 		res.status(200).json(movies);
 	} catch (error) {
 		console.log(error);

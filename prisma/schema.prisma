@@ -78,7 +78,7 @@ model Movie {
   movie_id       String     @id @default(uuid())
   user_id_date   String     @unique
   thumbnailUrl   String?
-  imageUrl       String?
+  imageUrl       String
   date           String
   title          String
   productionYear Int
