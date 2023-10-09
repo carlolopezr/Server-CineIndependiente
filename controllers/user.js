@@ -277,6 +277,16 @@ const sendNotificationEmail = async (req = request, res = response) => {
 	}
 };
 
+const changePasswordRequest = async (req=request, res=response) => {
+	const {email} = req.body
+
+	const text = `Hemos recibido una solicitud de cambio de contraseña para el usuario: ${email}, 
+	para cambiar tu contraseña puedes hacer clic en el siguiente link:`
+	const subject = 'Cambio de contraseña cine-independiente.vercel.app'
+	await notificationEmail(email, subject, text)
+}
+
+
 module.exports = {
 	getUser,
 	postUser,
