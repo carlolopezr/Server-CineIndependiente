@@ -259,6 +259,15 @@ const getAllMovies = async (req = request, res = response) => {
 							},
 						},
 					},
+					{
+						genres: {
+							some: {
+								name: {
+									contains: q,
+								},
+							},
+						},
+					},
 				],
 			},
 		});
