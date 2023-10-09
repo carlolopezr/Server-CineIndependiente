@@ -118,31 +118,30 @@ const updateFakeMovie = async (req = request, res = response) => {
 
 		delete movie.user_id;
 
+		console.log(movie.user_id_date);
 		const genresWithId = genres.map(genre => ({
 			genre_id: genre,
 		}));
 
-		const updatedFakeMovie = await recoverFromNotFound(
-			prisma.movie.update({
-				where: {
-					user_id_date: movie.user_id_date,
+		const updatedFakeMovie = await prisma.movie.update({
+			where: {
+				user_id_date: movie.user_id_date,
+			},
+			data: {
+				directors: {
+					deleteMany: {},
 				},
-				data: {
-					directors: {
-						deleteMany: {},
-					},
-					cast: {
-						deleteMany: {},
-					},
-					writers: {
-						deleteMany: {},
-					},
-					genres: {
-						set: [],
-					},
+				cast: {
+					deleteMany: {},
 				},
-			})
-		);
+				writers: {
+					deleteMany: {},
+				},
+				genres: {
+					set: [],
+				},
+			},
+		});
 
 		if (!updatedFakeMovie) {
 			return res.status(404).json({
@@ -208,6 +207,12 @@ const getMovie = async (req = request, res = response) => {
 			where: {
 				movie_id: id,
 			},
+			include: {
+				cast: true,
+				directors: true,
+				genres: true,
+				writers: true,
+			},
 		});
 
 		if (!movie) {
@@ -227,6 +232,7 @@ const getMovie = async (req = request, res = response) => {
 };
 
 const getAllMovies = async (req = request, res = response) => {
+	const q = req.query.q || '';
 	try {
 		const movies = await prisma.movie.findMany({
 			where: {
@@ -238,6 +244,50 @@ const getAllMovies = async (req = request, res = response) => {
 				productionYear: {
 					not: 0,
 				},
+				OR: [
+					{
+						title: {
+							contains: q,
+						},
+					},
+					{
+						cast: {
+							some: {
+								name: {
+									contains: q,
+								},
+							},
+						},
+					},
+				],
+			},
+		});
+
+		if (!movies || movies.length === 0) {
+			return res.status(404).json({
+				msg: 'No se encontraron películas',
+			});
+		}
+		res.status(200).json(movies);
+	} catch (error) {
+		console.log(error);
+		res.status(500).json({
+			msg: 'Hubo un error al obtener las películas',
+		});
+	}
+};
+
+const getMoviesByGenre = async (req = request, res = response) => {
+	const id = req.params.id || '';
+	console.log(id);
+	try {
+		const movies = await prisma.movie.findMany({
+			where: {
+				genres: {
+					some: {
+						genre_id: id,
+					},
+				},
 			},
 		});
 		if (!movies || movies.length === 0) {
@@ -245,6 +295,7 @@ const getAllMovies = async (req = request, res = response) => {
 				msg: 'No se encontraron películas',
 			});
 		}
+		console.log(movies);
 		res.status(200).json(movies);
 	} catch (error) {
 		console.log(error);
@@ -387,4 +438,5 @@ module.exports = {
 	postGenres,
 	postWatchHistory,
 	deleteMovie,
+	getMoviesByGenre,
 };

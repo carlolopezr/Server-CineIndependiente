@@ -21,6 +21,7 @@ const postUser = async (req = request, res = response) => {
 		lastname,
 		password,
 		emailVerified,
+		active,
 	};
 
 	const passwordErrors = validatePassword(user.password);
@@ -111,6 +112,17 @@ const loginUser = async (req = request, res = response) => {
 			return res.status(400).json({
 				ok: false,
 				msg: 'Email o contraseña incorrectos',
+			});
+		}
+
+		if (!user.active) {
+			await prisma.user.update({
+				where: {
+					user_id: user.user_id,
+				},
+				data: {
+					active: true,
+				},
 			});
 		}
 
@@ -251,20 +263,19 @@ const validatePassword = password => {
 	return errors;
 };
 
-const sendNotificationEmail = async(req=request, res=response) => {
-
-    try {
-        const {email, subject, text} = req.body;
-        await notificationEmail(email, subject, text)
-        return res.status(200).json({
-            msg:'Correo de notificación enviado con éxito'
-        })
-    } catch (error) {
-        return res.status(500).json({
-            msg:'Hubo un error al enviar el correo de notificación'
-        })
-    }
-}
+const sendNotificationEmail = async (req = request, res = response) => {
+	try {
+		const { email, subject, text } = req.body;
+		await notificationEmail(email, subject, text);
+		return res.status(200).json({
+			msg: 'Correo de notificación enviado con éxito',
+		});
+	} catch (error) {
+		return res.status(500).json({
+			msg: 'Hubo un error al enviar el correo de notificación',
+		});
+	}
+};
 
 module.exports = {
 	getUser,
@@ -274,5 +285,5 @@ module.exports = {
 	requestEmailVerification,
 	checkVerificationCode,
 	loginUser,
-	sendNotificationEmail
+	sendNotificationEmail,
 };
