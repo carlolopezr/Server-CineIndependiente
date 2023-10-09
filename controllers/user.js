@@ -135,6 +135,7 @@ const loginUser = async (req = request, res = response) => {
 			email: user.email,
 			lastname: user.lastname,
 			emailVerified: user.emailVerified,
+			avatarUrl: user.avatarUrl,
 		};
 
 		res.json({
@@ -146,6 +147,35 @@ const loginUser = async (req = request, res = response) => {
 		res.status(500).json({
 			ok: false,
 			msg: 'Hubo un problema en el servidor, intentelo de nuevo más tarde',
+		});
+	}
+};
+
+const updateUser = async (req = request, res = response) => {
+	const { data, user_id } = req.body;
+
+	try {
+		const updatedUser = await prisma.user.update({
+			where: {
+				user_id,
+			},
+			data: data,
+		});
+
+		if (!updatedUser) {
+			return res.status(404).json({
+				msg: 'Usuario no encontrado',
+			});
+		}
+
+		return res.status(200).json({
+			msg: 'Usuario actualizado correctamente',
+			updatedUser,
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Ocurrio un error al actualizar el usuario',
+			error,
 		});
 	}
 };
@@ -174,6 +204,7 @@ const revalidateToken = async (req = request, res = response) => {
 			email: user.email,
 			lastname: user.lastname,
 			emailVerified: user.emailVerified,
+			avatarUrl: user.avatarUrl,
 		};
 
 		res.status(200).json({
@@ -286,4 +317,5 @@ module.exports = {
 	checkVerificationCode,
 	loginUser,
 	sendNotificationEmail,
+	updateUser,
 };
