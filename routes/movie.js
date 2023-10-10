@@ -12,6 +12,7 @@ const {
 	postWatchHistory,
 	deleteMovie,
 	getMoviesByGenre,
+	getGenresWithMovies,
 } = require('../controllers/movie');
 const { validarCampos } = require('../middlewares/validarCampos');
 
@@ -41,6 +42,7 @@ router.post(
 );
 
 router.get('/get-genres', getAllGenres);
+router.get('/get-genres-movies', getGenresWithMovies);
 
 router.put(
 	'/update-movie',
