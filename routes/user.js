@@ -9,6 +9,8 @@ const {
 	loginUser,
 	sendNotificationEmail,
 	updateUser,
+	passwordChangeRequest,
+	resetPassword,
 } = require('../controllers/user');
 const { validateJWT } = require('../middlewares/validateJWT');
 const { body } = require('express-validator');
@@ -78,5 +80,12 @@ router.post(
 	],
 	sendNotificationEmail
 );
+
+router.post('/password-change-request',[
+	body('email', 'Falta el correo en la solicitud').not().isEmpty(),
+	validarCampos
+], passwordChangeRequest)
+
+router.post('/reset-password', resetPassword)
 
 module.exports = router;
