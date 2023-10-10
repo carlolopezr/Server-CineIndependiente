@@ -99,3 +99,13 @@ model Movie {
 
   @@index([user_id])
 }
+
+
+model Token {
+  token_id String @id @default(uuid())
+  user_id String @unique
+  email String @unique
+  token String
+  createdAt DateTime @default(now())
+  expiresAt DateTime @default(dbgenerated("(now() + interval 60 minute)"))
+}
