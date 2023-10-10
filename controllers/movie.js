@@ -399,6 +399,26 @@ const getAllGenres = async (req = request, res = response) => {
 	}
 };
 
+const getGenresWithMovies = async (req = request, res = response) => {
+	try {
+		const genres = await prisma.genre.findMany({
+			include: {
+				movies: true,
+			},
+		});
+		if (!genres || genres.length === 0) {
+			return res.status(404).json({
+				msg: 'No se encontraron géneros',
+			});
+		}
+		res.status(200).json(genres);
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Hubo un error al obtener los géneros',
+		});
+	}
+};
+
 const postWatchHistory = async (req = request, res = response) => {
 	try {
 		const { currentTime, user_id, movie_id } = req.body;
@@ -446,4 +466,5 @@ module.exports = {
 	postWatchHistory,
 	deleteMovie,
 	getMoviesByGenre,
+	getGenresWithMovies,
 };
