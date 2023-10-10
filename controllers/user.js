@@ -402,6 +402,12 @@ const resetPassword = async (req=request, res=response) => {
 			})
 		}
 
+		const passwordErrors = validatePassword(newPassword);
+
+		if (passwordErrors.length > 0) {
+			return res.status(400).json({ errors: passwordErrors });
+		}
+
 		if (token.expiresAt < Date.now()) {
 			return res.status(400).json({
 				msg:'El token ha expirado, por favor solicite uno nuevo'
