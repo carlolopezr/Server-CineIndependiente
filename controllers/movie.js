@@ -44,19 +44,16 @@ const postMovie = async (req = request, res = response) => {
 
 const updateMovie = async (req = request, res = response) => {
 	try {
-		const { date, user_id, data } = req.body;
+		const { user_id_date, data } = req.body;
 		const updateMovie = await prisma.movie
-			.updateMany({
+			.update({
 				where: {
-					date: date,
-					user_id: user_id,
+					user_id_date:user_id_date
 				},
 				data: data,
 			})
 			.catch(err => {
-				res.status(400).json({
-					msg: `Hubo un error al intentar encontrar la película en la base de datos: ${err}`,
-				});
+				throw new Error('Hubo un error al intentar encontrar la película')
 			});
 
 		res.status(200).json({
