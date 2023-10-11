@@ -400,7 +400,13 @@ const getGenresWithMovies = async (req = request, res = response) => {
 	try {
 		const genres = await prisma.genre.findMany({
 			include: {
-				movies: true,
+				movies: {
+					where: {
+						productionYear: {
+							not: 0
+						}
+					}
+				}
 			},
 		});
 		if (!genres || genres.length === 0) {
