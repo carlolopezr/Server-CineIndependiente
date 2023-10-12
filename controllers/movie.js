@@ -203,6 +203,9 @@ const getMovie = async (req = request, res = response) => {
 		const movie = await prisma.movie.findUnique({
 			where: {
 				movie_id: id,
+				user: {
+					active: true,
+				},
 			},
 			include: {
 				cast: true,
@@ -237,6 +240,9 @@ const getAllMovies = async (req = request, res = response) => {
 				explicitContent: false,
 				movieUrl: {
 					not: null,
+				},
+				user: {
+					active: true,
 				},
 				productionYear: {
 					not: 0,
@@ -288,6 +294,12 @@ const getMoviesByGenre = async (req = request, res = response) => {
 	try {
 		const movies = await prisma.movie.findMany({
 			where: {
+				productionYear: {
+					not: 0,
+				},
+				user: {
+					active: true,
+				},
 				genres: {
 					some: {
 						genre_id: id,
@@ -404,6 +416,10 @@ const getGenresWithMovies = async (req = request, res = response) => {
 					where: {
 						productionYear: {
 							not: 0,
+						},
+						enabled: true,
+						user: {
+							active: true,
 						},
 					},
 				},

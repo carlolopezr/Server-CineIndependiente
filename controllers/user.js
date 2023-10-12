@@ -20,7 +20,7 @@ const postUser = async (req = request, res = response) => {
 		name,
 		lastname,
 		password,
-		emailVerified
+		emailVerified,
 	};
 
 	const passwordErrors = validatePassword(user.password);
