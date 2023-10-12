@@ -13,6 +13,7 @@ const {
 	deleteMovie,
 	getMoviesByGenre,
 	getGenresWithMovies,
+	getWatchHistory,
 } = require('../controllers/movie');
 const { validarCampos } = require('../middlewares/validarCampos');
 
@@ -56,6 +57,7 @@ router.put(
 );
 
 router.post('/save-watch-history', [], postWatchHistory);
+router.get('/get-watch-history/:id', [], getWatchHistory);
 
 router.put('/update-first-movie', [], updateFakeMovie);
 

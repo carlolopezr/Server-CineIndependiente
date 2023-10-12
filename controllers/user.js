@@ -174,7 +174,7 @@ const updateUser = async (req = request, res = response) => {
 		});
 	} catch (error) {
 		res.status(500).json({
-			msg: 'Ocurrio un error al actualizar el usuario',
+			msg: 'Ocurrió un error al actualizar el usuario',
 			error,
 		});
 	}
@@ -308,98 +308,95 @@ const sendNotificationEmail = async (req = request, res = response) => {
 	}
 };
 
-const passwordChangeRequest = async (req=request, res=response) => {
-
+const passwordChangeRequest = async (req = request, res = response) => {
 	try {
-		const {email} = req.body
+		const { email } = req.body;
 
 		if (!email) {
 			return res.status(400).json({
-				msg:'Falta el email en la solicitud'
-			})
+				msg: 'Falta el email en la solicitud',
+			});
 		}
 
 		const user = await prisma.user.findUnique({
-			where:{
-				email:email
-			}
-		})
+			where: {
+				email: email,
+			},
+		});
 
 		if (!user) {
 			return res.status(400).json({
-				msg:'Error al encontrar el usuario en la base de datos'
-			})	
+				msg: 'Error al encontrar el usuario en la base de datos',
+			});
 		}
 
 		const salt = bcryptjs.genSaltSync();
-		let resetToken = crypto.randomBytes(32).toString('hex')
-		const hash = bcryptjs.hashSync(resetToken, salt)
+		let resetToken = crypto.randomBytes(32).toString('hex');
+		const hash = bcryptjs.hashSync(resetToken, salt);
 
 		let expiresAt = new Date();
 		expiresAt.setHours(expiresAt.getHours() + 1);
 
+		const token = await prisma.token
+			.upsert({
+				where: {
+					email: user.email,
+				},
+				create: {
+					user_id: user.user_id,
+					email: user.email,
+					token: hash,
+				},
+				update: {
+					token: hash,
+					expiresAt: expiresAt,
+				},
+			})
+			.catch(err => {
+				console.log(err);
+				throw new Error('Error al intentar crear el token');
+			});
 
-		const token = await prisma.token.upsert({
-			where: {
-				email: user.email
-			},
-			create: {
-				user_id: user.user_id,
-				email: user.email,
-				token:hash
-			},
-			update: {
-				token:hash,
-				expiresAt: expiresAt
-			}
-			
-		}).catch((err) => {
-			console.log(err);
-			throw new Error('Error al intentar crear el token')
-		})
-
-		const link = `${process.env.CINE_INDEPENDIENTE_CLIENT}/auth/reset-password?token=${token.token}&id=${token.user_id}`
+		const link = `${process.env.CINE_INDEPENDIENTE_CLIENT}/auth/reset-password?token=${token.token}&id=${token.user_id}`;
 
 		const text = `Hemos recibido una solicitud de cambio de contraseña para el usuario: ${email}, 
-		para cambiar tu contraseña puedes hacer clic en el siguiente link: ${link} \n Si no has sido tu puedes ignorar este mensaje`
-		const subject = 'Cambio de contraseña cine-independiente.vercel.app'
-		await notificationEmail(email, subject, text)
-		
+		para cambiar tu contraseña puedes hacer clic en el siguiente link: ${link} \n Si no has sido tu puedes ignorar este mensaje`;
+		const subject = 'Cambio de contraseña cine-independiente.vercel.app';
+		await notificationEmail(email, subject, text);
+
 		return res.status(200).json({
-			msg:'Solicitud realizada con éxito'
-		})
+			msg: 'Solicitud realizada con éxito',
+		});
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({
-			msg:'Ha ocurrido un error intentelo de nuevo más tarde',
-			error
-		})
+			msg: 'Ha ocurrido un error intentelo de nuevo más tarde',
+			error,
+		});
 	}
-	
-}
+};
 
-const resetPassword = async (req=request, res=response) => {
-
-	const {newPassword,  user_id} = req.body
+const resetPassword = async (req = request, res = response) => {
+	const { newPassword, user_id } = req.body;
 	const salt = bcryptjs.genSaltSync();
 
 	try {
 		const user = await prisma.user.findUniqueOrThrow({
 			where: {
-				user_id:user_id
-			}
-		})
+				user_id: user_id,
+			},
+		});
 
 		const token = await prisma.token.findUniqueOrThrow({
 			where: {
-				user_id:user_id
-			}
-		})
+				user_id: user_id,
+			},
+		});
 
-		if(!newPassword) {
+		if (!newPassword) {
 			return res.status(400).json({
-				msg:'Falta el newPassword en la solicitud'
-			})
+				msg: 'Falta el newPassword en la solicitud',
+			});
 		}
 
 		const passwordErrors = validatePassword(newPassword);
@@ -410,44 +407,44 @@ const resetPassword = async (req=request, res=response) => {
 
 		if (token.expiresAt < Date.now()) {
 			return res.status(400).json({
-				msg:'El token ha expirado, por favor solicite uno nuevo'
-			})
+				msg: 'El token ha expirado, por favor solicite uno nuevo',
+			});
 		}
 
-		const hashedPassword = bcryptjs.hashSync(newPassword, salt)
+		const hashedPassword = bcryptjs.hashSync(newPassword, salt);
 
-		const updatedUser = prisma.user.update({
-			where:{
-				user_id:user_id
-			},
-			data: {
-				password: hashedPassword
-			}
-		}).catch((err) => {
-			console.log(err, 'Error en updatedUser');
-		})
+		const updatedUser = prisma.user
+			.update({
+				where: {
+					user_id: user_id,
+				},
+				data: {
+					password: hashedPassword,
+				},
+			})
+			.catch(err => {
+				console.log(err, 'Error en updatedUser');
+			});
 
-		const { password, ...updatedUserWithOutPassword} = await updatedUser;
+		const { password, ...updatedUserWithOutPassword } = await updatedUser;
 
 		await prisma.token.delete({
 			where: {
-				user_id:user_id
-			}
-		})
+				user_id: user_id,
+			},
+		});
 
 		return res.status(200).json({
-			msg:'Usuario updateado con éxito',
-			updatedUserWithOutPassword
-		})
-
+			msg: 'Usuario updateado con éxito',
+			updatedUserWithOutPassword,
+		});
 	} catch (error) {
 		return res.status(500).json({
-			msg:'Hubo un error al procesar la solicitud',
-			error: error.message
-		})
+			msg: 'Hubo un error al procesar la solicitud',
+			error: error.message,
+		});
 	}
-}
-
+};
 
 module.exports = {
 	getUser,
@@ -460,5 +457,5 @@ module.exports = {
 	sendNotificationEmail,
 	updateUser,
 	passwordChangeRequest,
-	resetPassword
+	resetPassword,
 };

@@ -48,12 +48,12 @@ const updateMovie = async (req = request, res = response) => {
 		const updateMovie = await prisma.movie
 			.update({
 				where: {
-					user_id_date:user_id_date
+					user_id_date: user_id_date,
 				},
 				data: data,
 			})
 			.catch(err => {
-				throw new Error('Hubo un error al intentar encontrar la película')
+				throw new Error('Hubo un error al intentar encontrar la película');
 			});
 
 		res.status(200).json({
@@ -403,10 +403,10 @@ const getGenresWithMovies = async (req = request, res = response) => {
 				movies: {
 					where: {
 						productionYear: {
-							not: 0
-						}
-					}
-				}
+							not: 0,
+						},
+					},
+				},
 			},
 		});
 		if (!genres || genres.length === 0) {
@@ -457,6 +457,38 @@ const postWatchHistory = async (req = request, res = response) => {
 	}
 };
 
+const getWatchHistory = async (req = request, res = response) => {
+	const id = req.params.id;
+	if (!id) {
+		return res.status(400).json({
+			msg: 'No hay id en la solicitud',
+		});
+	}
+
+	try {
+		const watchHistory = await prisma.watchHistory.findMany({
+			where: {
+				user_id: id,
+			},
+		});
+
+		if (!watchHistory) {
+			return res.status(404).json({
+				msg: 'No se ha encontrado el historial de visualización',
+			});
+		}
+
+		res.status(200).json({
+			watchHistory,
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Ha ocurrido un error al obtener el historial de visualización',
+			error,
+		});
+	}
+};
+
 module.exports = {
 	postMovie,
 	postGenre,
@@ -470,4 +502,5 @@ module.exports = {
 	deleteMovie,
 	getMoviesByGenre,
 	getGenresWithMovies,
+	getWatchHistory,
 };
