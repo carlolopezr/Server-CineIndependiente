@@ -89,10 +89,26 @@ const notificationEmail = async (email, subject, text) => {
     }
 };
 
+const notificationEmailHTML = async (email, subject, html) => {
+    
+    try { 
+        await transporter.sendMail({
+            from: 'noreply-cineindependiente <noreplycineindependiente@gmail.com>',
+            to: email,
+            subject: subject,
+            html:html
+        });
+        return 'Mensaje enviado con éxito';
+    } catch (error) {
+        throw new Error('Error al enviar el correo: ' + error.message);
+    }
+};
+
 
 module.exports = {
     transporter,
     sendVerificationCode,
     existingEmail,
-    notificationEmail
+    notificationEmail,
+    notificationEmailHTML
 }

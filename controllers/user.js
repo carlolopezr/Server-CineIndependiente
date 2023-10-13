@@ -4,7 +4,7 @@ const bcryptjs = require('bcryptjs');
 const crypto = require('crypto');
 const { sendVerificationCode, existingEmail } = require('../helpers/emails');
 const { generateJWT } = require('../helpers/generateJWT');
-const { notificationEmail } = require('../helpers/emails');
+const { notificationEmail, notificationEmailHTML } = require('../helpers/emails');
 
 const getUser = async (req = request, res = response) => {
 	res.send('Hola Mundo');
@@ -358,10 +358,18 @@ const passwordChangeRequest = async (req = request, res = response) => {
 
 		const link = `${process.env.CINE_INDEPENDIENTE_CLIENT}/auth/reset-password?token=${token.token}&id=${token.user_id}`;
 
-		const text = `Hemos recibido una solicitud de cambio de contraseña para el usuario: ${email}, 
-		para cambiar tu contraseña puedes hacer clic en el siguiente link: ${link} \n Si no has sido tu, puedes ignorar este mensaje`;
+		const html = `<p>
+						Hemos recibido una solicitud de cambio de contraseña para el usuario: <strong>${email}</strong>,
+						para cambiar tu contraseña puedes hacer clic en el siguiente enlace:
+						<a href="${link}" target="_blank">${link}</a>
+					</p>
+					<p>
+						Si no has sido tú, puedes ignorar este mensaje.
+					</p>`;
+
 		const subject = 'Cambio de contraseña cine-independiente.vercel.app';
-		await notificationEmail(email, subject, text);
+
+		await notificationEmailHTML(email, subject, html);
 
 		return res.status(200).json({
 			msg: 'Solicitud realizada con éxito',
