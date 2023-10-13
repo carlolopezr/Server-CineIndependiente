@@ -10,6 +10,9 @@ class Server {
 		this.paths = {
 			user: '/api/user',
 			movie: '/api/movie',
+			director: '/api/director',
+			cast: '/api/cast',
+			writer: '/api/writer'
 		};
 
 		// Middlewares
@@ -44,6 +47,10 @@ class Server {
 		//Rutas aquí
 		this.app.use(this.paths.user, require('../routes/user'));
 		this.app.use(this.paths.movie, require('../routes/movie'));
+		this.app.use(this.paths.director, require('../routes/director'));
+		this.app.use(this.paths.cast, require('../routes/cast'));
+		this.app.use(this.paths.writer, require('../routes/writer'))
+
 	}
 
 	listen() {

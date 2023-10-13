@@ -94,7 +94,7 @@ model Movie {
   writers        Writer[]
   cast           Actor[]
   genres         Genre[]
-  users          WatchHistory[]
+  WatchHistory   WatchHistory[]
   user           User       @relation(fields: [user_id], references: [user_id])
 
   @@index([user_id])

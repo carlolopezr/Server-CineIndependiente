@@ -48,8 +48,7 @@ router.get('/get-genres-movies', getGenresWithMovies);
 router.put(
 	'/update-movie',
 	[
-		body('date', 'Falta la fecha en la solicitud').not().isEmpty(),
-		body('user_id', 'Falta el user_id').not().isEmpty(),
+		body('user_id_date', 'Falta el user_id_date').not().isEmpty(),
 		body('data', 'Falta la data en la solicitud').not().isEmpty(),
 		validarCampos,
 	],
