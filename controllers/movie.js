@@ -44,7 +44,7 @@ const postMovie = async (req = request, res = response) => {
 
 const updateMovie = async (req = request, res = response) => {
 	try {
-		const { user_id_date, data, directors = [], cast =[], writers =[], genres =[]} = req.body;
+		const { user_id_date, data} = req.body;
 		const updateMovie = await prisma.movie
 			.update({
 				where: {
@@ -56,28 +56,6 @@ const updateMovie = async (req = request, res = response) => {
 				console.log(err.message);
 				throw new Error('Hubo un error al intentar encontrar la película')
 			});
-
-
-		if (directors) {
-			directors.forEach(async(director) => {
-				const updatedDirector = await prisma.director.upsert({
-					where: {
-						movie_id: data.movie_id,
-						director_id: director.director_id
-					},
-					create: {
-						name: director.name
-					},
-					update: {
-						name: director.name
-					}
-					
-				}).catch((err) => {
-					err.status = 500
-					throw err
-				})	
-			});
-		}
 		
 		res.status(200).json({
 			msg: 'Película actualizada correctamente',
