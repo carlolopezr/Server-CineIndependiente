@@ -163,17 +163,17 @@ const updateUser = async (req = request, res = response) => {
 
 		if (!updatedUser) {
 			return res.status(404).json({
-				msg: 'Usuario no encontrado',
+				msg: 'Usuario no encontrado.',
 			});
 		}
 
 		return res.status(200).json({
-			msg: 'Usuario actualizado correctamente',
+			msg: 'Usuario actualizado correctamente.',
 			updatedUser,
 		});
 	} catch (error) {
 		res.status(500).json({
-			msg: 'Ocurrió un error al actualizar el usuario',
+			msg: 'Ocurrió un error al actualizar el usuario.',
 			error,
 		});
 	}
@@ -359,7 +359,7 @@ const passwordChangeRequest = async (req = request, res = response) => {
 		const link = `${process.env.CINE_INDEPENDIENTE_CLIENT}/auth/reset-password?token=${token.token}&id=${token.user_id}`;
 
 		const text = `Hemos recibido una solicitud de cambio de contraseña para el usuario: ${email}, 
-		para cambiar tu contraseña puedes hacer clic en el siguiente link: ${link} \n Si no has sido tu puedes ignorar este mensaje`;
+		para cambiar tu contraseña puedes hacer clic en el siguiente link: ${link} \n Si no has sido tu, puedes ignorar este mensaje`;
 		const subject = 'Cambio de contraseña cine-independiente.vercel.app';
 		await notificationEmail(email, subject, text);
 
@@ -380,21 +380,27 @@ const resetPassword = async (req = request, res = response) => {
 	const salt = bcryptjs.genSaltSync();
 
 	try {
-		const user = await prisma.user.findUniqueOrThrow({
+		const user = await prisma.user.findUnique({
 			where: {
 				user_id: user_id,
 			},
 		});
 
-		const token = await prisma.token.findUniqueOrThrow({
+		const token = await prisma.token.findUnique({
 			where: {
 				user_id: user_id,
 			},
 		});
+
+		if (!token) {
+			return res.status(400).json({
+				msg: 'El token es inválido o ha expirado, por favor solicite uno nuevo.',
+			});
+		}
 
 		if (!newPassword) {
 			return res.status(400).json({
-				msg: 'Falta el newPassword en la solicitud',
+				msg: 'Falta la contraseña en la solicitud.',
 			});
 		}
 
@@ -406,7 +412,7 @@ const resetPassword = async (req = request, res = response) => {
 
 		if (token.expiresAt < Date.now()) {
 			return res.status(400).json({
-				msg: 'El token ha expirado, por favor solicite uno nuevo',
+				msg: 'El token ha expirado, por favor solicite uno nuevo.',
 			});
 		}
 
@@ -434,12 +440,12 @@ const resetPassword = async (req = request, res = response) => {
 		});
 
 		return res.status(200).json({
-			msg: 'Usuario updateado con éxito',
+			msg: 'Contraseña actualizada con éxito.',
 			updatedUserWithOutPassword,
 		});
 	} catch (error) {
 		return res.status(500).json({
-			msg: 'Hubo un error al procesar la solicitud',
+			msg: 'Hubo un error al procesar la solicitud.',
 			error: error.message,
 		});
 	}
