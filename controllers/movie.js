@@ -506,6 +506,47 @@ const getWatchHistory = async (req = request, res = response) => {
 	}
 };
 
+const updateGenreToMovie = async (req = request, res=response) => {
+
+	try {
+		const {genres =[], movie_id} = req.body
+		
+		if (!genres || genres.length < 1) {
+			return res.status(400).json({
+				msg:'Faltan los géneros en la solicitud'
+			})
+		}
+		
+		const updatedMovie = await prisma.movie.update({
+			where:{
+				movie_id:movie_id
+			},
+			data: {
+				genres:{
+					set: [],
+					connect:genres 
+				}
+			},
+		})
+
+		if (!updatedMovie) {
+			return res.status(404).json({
+				msg:'No fue posible actualizar los géneros, película no encontrada'
+			})
+		}
+
+		return res.status(200).json({
+			msg:'Géneros actualizados con éxito',
+			updatedMovie
+		})
+
+	} catch (error) {
+		res.status(500).json({
+			msg:'Ha ocurrido un error al intentar actualizar los géneros'
+		})
+	}
+}
+
 module.exports = {
 	postMovie,
 	postGenre,
@@ -520,4 +561,5 @@ module.exports = {
 	getMoviesByGenre,
 	getGenresWithMovies,
 	getWatchHistory,
+	updateGenreToMovie
 };

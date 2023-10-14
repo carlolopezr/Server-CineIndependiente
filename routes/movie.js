@@ -14,6 +14,7 @@ const {
 	getMoviesByGenre,
 	getGenresWithMovies,
 	getWatchHistory,
+	updateGenreToMovie,
 } = require('../controllers/movie');
 const { validarCampos } = require('../middlewares/validarCampos');
 
@@ -61,5 +62,7 @@ router.get('/get-watch-history/:id', [], getWatchHistory);
 router.put('/update-first-movie', [], updateFakeMovie);
 
 router.get('/post-genres', postGenres);
+
+router.put('/update-genretomovie', updateGenreToMovie)
 
 module.exports = router;
