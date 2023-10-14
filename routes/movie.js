@@ -14,6 +14,7 @@ const {
 	getMoviesByGenre,
 	getGenresWithMovies,
 	getWatchHistory,
+	getUserMovies,
 } = require('../controllers/movie');
 const { validarCampos } = require('../middlewares/validarCampos');
 
@@ -54,6 +55,8 @@ router.put(
 	],
 	updateMovie
 );
+
+router.get('/get-movies-by-user/:userId', getUserMovies);
 
 router.post('/save-watch-history', [], postWatchHistory);
 router.get('/get-watch-history/:id', [], getWatchHistory);

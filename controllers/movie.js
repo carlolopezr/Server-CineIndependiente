@@ -44,7 +44,7 @@ const postMovie = async (req = request, res = response) => {
 
 const updateMovie = async (req = request, res = response) => {
 	try {
-		const { user_id_date, data} = req.body;
+		const { user_id_date, data } = req.body;
 		const updateMovie = await prisma.movie
 			.update({
 				where: {
@@ -53,9 +53,9 @@ const updateMovie = async (req = request, res = response) => {
 				data: data,
 			})
 			.catch(err => {
-				throw new Error('Hubo un error al intentar encontrar la película')
+				throw new Error('Hubo un error al intentar encontrar la película');
 			});
-		
+
 		res.status(200).json({
 			msg: 'Película actualizada correctamente',
 			updateMovie,
@@ -63,7 +63,7 @@ const updateMovie = async (req = request, res = response) => {
 	} catch (error) {
 		res.status(error.status || 500).json({
 			msg: 'Hubo un error al intentar actualizar la película',
-			error:error.message
+			error: error.message,
 		});
 	}
 };
@@ -207,6 +207,13 @@ const getMovie = async (req = request, res = response) => {
 				user: {
 					active: true,
 				},
+				movieUrl: {
+					not: null,
+				},
+				explicitContent: false,
+				productionYear: {
+					not: 0,
+				},
 			},
 			include: {
 				cast: true,
@@ -298,8 +305,13 @@ const getMoviesByGenre = async (req = request, res = response) => {
 				productionYear: {
 					not: 0,
 				},
+				explicitContent: false,
+				enabled: true,
 				user: {
 					active: true,
+				},
+				movieUrl: {
+					not: null,
 				},
 				genres: {
 					some: {
@@ -419,8 +431,12 @@ const getGenresWithMovies = async (req = request, res = response) => {
 							not: 0,
 						},
 						enabled: true,
+						explicitContent: false,
 						user: {
 							active: true,
+						},
+						movieUrl: {
+							not: null,
 						},
 					},
 				},
@@ -506,6 +522,45 @@ const getWatchHistory = async (req = request, res = response) => {
 	}
 };
 
+const getUserMovies = async (req = request, res = response) => {
+	const user_id = req.params.userId;
+
+	if (!user_id) {
+		return res.status(400).json({
+			msg: 'No hay id en la solicitud',
+		});
+	}
+	try {
+		const userMovies = await prisma.movie.findMany({
+			where: {
+				user_id,
+				productionYear: {
+					not: 0,
+				},
+				explicitContent: false,
+				movieUrl: {
+					not: null,
+				},
+			},
+		});
+
+		if (!userMovies || userMovies.length === 0) {
+			return res.status(404).json({
+				msg: 'No se han encontrado películas de este usuario',
+			});
+		}
+
+		res.status(200).json({
+			userMovies,
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Ha ocurrido un error al obtener las películas',
+			error,
+		});
+	}
+};
+
 module.exports = {
 	postMovie,
 	postGenre,
@@ -520,4 +575,5 @@ module.exports = {
 	getMoviesByGenre,
 	getGenresWithMovies,
 	getWatchHistory,
+	getUserMovies,
 };
