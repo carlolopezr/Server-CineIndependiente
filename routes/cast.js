@@ -10,6 +10,7 @@ const router = Router();
 
 router.put('/update-cast', [
     check('cast', 'Falta el cast en la solicitud').not().isEmpty(),
+    check('movie_id', 'Falta el movie_id en la solicitud').not().isEmpty(),
     validarCampos
 ], updateCast)
 

@@ -12,6 +12,7 @@ router.get('/get-directors', (req, res) => {
 
 router.put('/update-director', [
     check('directors', 'Faltan los directores en la solicitud').not().isEmpty(),
+    check('movie_id', 'Falta el movie_id en la solicitud').not().isEmpty(),
     validarCampos
 ] ,updateDirector)
 

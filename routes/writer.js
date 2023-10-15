@@ -8,6 +8,7 @@ const router = Router();
 
 router.put('/update-writer', [
     check('writers', 'Faltan los writers en la solicitud').not().isEmpty(),
+    check('movie_id', 'Falta el movie_id en la solicitud').not().isEmpty(),
     validarCampos
 ], updateWriter)
 
