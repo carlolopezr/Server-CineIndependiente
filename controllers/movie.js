@@ -216,10 +216,22 @@ const getMovie = async (req = request, res = response) => {
 				},
 			},
 			include: {
-				cast: true,
-				directors: true,
+				cast: {
+					orderBy: {
+                        name:'asc'
+                    }
+				},
+				directors: {
+					orderBy: {
+                        name:'asc'
+                    }
+				},
 				genres: true,
-				writers: true,
+				writers: {
+					orderBy: {
+                        name:'asc'
+                    }
+				},
 			},
 		});
 
