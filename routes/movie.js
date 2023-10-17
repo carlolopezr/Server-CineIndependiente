@@ -16,6 +16,9 @@ const {
 	getWatchHistory,
 	getUserMovies,
 	updateGenreToMovie,
+	getUserList,
+	addMovieToUserList,
+	deleteMovieFromUserList,
 } = require('../controllers/movie');
 const { validarCampos } = require('../middlewares/validarCampos');
 
@@ -58,6 +61,9 @@ router.put(
 );
 
 router.get('/get-movies-by-user/:userId', getUserMovies);
+router.get('/get-user-list/:userId', getUserList);
+router.post('/add-movie-user-list', addMovieToUserList);
+router.delete('/delete-movie-user-list', deleteMovieFromUserList);
 
 router.post('/save-watch-history', [], postWatchHistory);
 router.get('/get-watch-history/:id', [], getWatchHistory);

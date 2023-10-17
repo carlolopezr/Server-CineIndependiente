@@ -218,19 +218,19 @@ const getMovie = async (req = request, res = response) => {
 			include: {
 				cast: {
 					orderBy: {
-                        name:'asc'
-                    }
+						name: 'asc',
+					},
 				},
 				directors: {
 					orderBy: {
-                        name:'asc'
-                    }
+						name: 'asc',
+					},
 				},
 				genres: true,
 				writers: {
 					orderBy: {
-                        name:'asc'
-                    }
+						name: 'asc',
+					},
 				},
 			},
 		});
@@ -517,7 +517,7 @@ const getWatchHistory = async (req = request, res = response) => {
 			},
 		});
 
-		if (!watchHistory) {
+		if (!watchHistory || watchHistory.length === 0) {
 			return res.status(404).json({
 				msg: 'No se ha encontrado el historial de visualización',
 			});
@@ -572,46 +572,126 @@ const getUserMovies = async (req = request, res = response) => {
 		});
 	}
 };
-const updateGenreToMovie = async (req = request, res=response) => {
-
+const updateGenreToMovie = async (req = request, res = response) => {
 	try {
-		const {genres =[], movie_id} = req.body
-		
+		const { genres = [], movie_id } = req.body;
+
 		if (!genres || genres.length < 1) {
 			return res.status(400).json({
-				msg:'Faltan los géneros en la solicitud'
-			})
+				msg: 'Faltan los géneros en la solicitud',
+			});
 		}
-		
+
 		const updatedMovie = await prisma.movie.update({
-			where:{
-				movie_id:movie_id
+			where: {
+				movie_id: movie_id,
 			},
 			data: {
-				genres:{
+				genres: {
 					set: [],
-					connect:genres 
-				}
+					connect: genres,
+				},
 			},
-		})
+		});
 
 		if (!updatedMovie) {
 			return res.status(404).json({
-				msg:'No fue posible actualizar los géneros, película no encontrada'
-			})
+				msg: 'No fue posible actualizar los géneros, película no encontrada',
+			});
 		}
 
 		return res.status(200).json({
-			msg:'Géneros actualizados con éxito',
-			updatedMovie
-		})
-
+			msg: 'Géneros actualizados con éxito',
+			updatedMovie,
+		});
 	} catch (error) {
 		res.status(500).json({
-			msg:'Ha ocurrido un error al intentar actualizar los géneros'
-		})
+			msg: 'Ha ocurrido un error al intentar actualizar los géneros',
+		});
 	}
-}
+};
+
+const addMovieToUserList = async (req = request, res = response) => {
+	const { movie_id, user_id } = req.body;
+	try {
+		const movieAddedToUserList = await prisma.userList.create({
+			data: {
+				movie_id,
+				user_id,
+			},
+		});
+
+		res.status(201).json({
+			movieAddedToUserList,
+			msg: 'Película agregada correctamente.',
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Ha ocurrido un error al agregar la película a la lista.',
+			error,
+		});
+	}
+};
+
+const deleteMovieFromUserList = async (req = request, res = response) => {
+	const { movie_id, user_id } = req.body;
+
+	try {
+		const deletedMovieFromUserList = await prisma.userList.delete({
+			where: {
+				user_id_movie_id: {
+					user_id,
+					movie_id,
+				},
+			},
+		});
+
+		res.status(200).json({
+			msg: 'Película eliminada de la lista correctamente.',
+			deletedMovieFromUserList,
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Ha ocurrido un error al eliminar la película de la lista.',
+			error,
+		});
+	}
+};
+
+const getUserList = async (req = request, res = response) => {
+	const user_id = req.params.userId;
+
+	if (!user_id) {
+		return res.status(400).json({
+			msg: 'No hay id de usuario en la solicitud',
+		});
+	}
+
+	try {
+		const userList = await prisma.userList.findMany({
+			where: {
+				user_id,
+			},
+			include: {
+				movie: true,
+			},
+		});
+
+		if (!userList || userList.length === 0) {
+			return res.status(404).json({
+				msg: 'Aún no tienes películas agregadas a tu lista.',
+			});
+		}
+
+		res.status(200).json({
+			userList,
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Ha ocurrido un error al obtener la lista del usuario',
+		});
+	}
+};
 
 module.exports = {
 	postMovie,
@@ -628,5 +708,8 @@ module.exports = {
 	getGenresWithMovies,
 	getWatchHistory,
 	getUserMovies,
-	updateGenreToMovie
+	updateGenreToMovie,
+	getUserList,
+	addMovieToUserList,
+	deleteMovieFromUserList,
 };

@@ -20,6 +20,7 @@ model User {
   active        Boolean  @default(true)
   avatarUrl     String?
   moviesHistory WatchHistory[]
+  userList        UserList[]
   movies        Movie[]
 }
 
@@ -94,6 +95,7 @@ model Movie {
   writers        Writer[]
   cast           Actor[]
   genres         Genre[]
+  userList       UserList[]
   WatchHistory   WatchHistory[]
   user           User       @relation(fields: [user_id], references: [user_id])
 
@@ -108,4 +110,16 @@ model Token {
   token String
   createdAt DateTime @default(now())
   expiresAt DateTime @default(dbgenerated("(now() + interval 60 minute)"))
+}
+
+model UserList {
+  user User @relation(fields:[user_id], references: [user_id])
+  user_id String
+  movie Movie @relation(fields:[movie_id], references: [movie_id])
+  movie_id String
+  updatedAt      DateTime   @updatedAt
+
+  @@id([user_id, movie_id])
+  @@index([user_id])
+  @@index([movie_id])
 }
