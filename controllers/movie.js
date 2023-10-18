@@ -115,8 +115,6 @@ const updateFakeMovie = async (req = request, res = response) => {
 		const { movie, directors, writers, cast, genres } = req.body;
 
 		delete movie.user_id;
-
-		console.log(movie.user_id_date);
 		const genresWithId = genres.map(genre => ({
 			genre_id: genre,
 		}));
@@ -572,9 +570,14 @@ const getUserMovies = async (req = request, res = response) => {
 		});
 	}
 };
+
 const updateGenreToMovie = async (req = request, res = response) => {
 	try {
 		const { genres = [], movie_id } = req.body;
+
+		const genresWithId = genres.map(genre => ({
+			genre_id: genre,
+		}));
 
 		if (!genres || genres.length < 1) {
 			return res.status(400).json({
@@ -589,24 +592,28 @@ const updateGenreToMovie = async (req = request, res = response) => {
 			data: {
 				genres: {
 					set: [],
-					connect: genres,
+					connect: genresWithId,
 				},
+			},
+			include: {
+				genres: true,
 			},
 		});
 
 		if (!updatedMovie) {
 			return res.status(404).json({
-				msg: 'No fue posible actualizar los géneros, película no encontrada',
+				msg: 'No fue posible actualizar los géneros, película no encontrada.',
 			});
 		}
 
 		return res.status(200).json({
-			msg: 'Géneros actualizados con éxito',
-			updatedMovie,
+			msg: 'Géneros actualizados con éxito.',
+			updatedGenres: updatedMovie.genres,
 		});
 	} catch (error) {
 		res.status(500).json({
-			msg: 'Ha ocurrido un error al intentar actualizar los géneros',
+			msg: 'Ha ocurrido un error al intentar actualizar los géneros.',
+			error,
 		});
 	}
 };
@@ -653,6 +660,34 @@ const deleteMovieFromUserList = async (req = request, res = response) => {
 	} catch (error) {
 		res.status(500).json({
 			msg: 'Ha ocurrido un error al eliminar la película de la lista.',
+			error,
+		});
+	}
+};
+
+const deleteUserList = async (req = request, res = response) => {
+	const user_id = req.params.userId;
+
+	if (!user_id) {
+		return res.status(400).json({
+			msg: 'No hay id del usuario en la solicitud',
+		});
+	}
+
+	try {
+		const deletedUserListCount = await prisma.userList.deleteMany({
+			where: {
+				user_id,
+			},
+		});
+
+		res.status(200).json({
+			msg: 'Lista borrada con éxito.',
+			deletedUserListCount,
+		});
+	} catch (error) {
+		res.status(500).json({
+			msg: 'Ha ocurrido un error al borrar la lista.',
 			error,
 		});
 	}
@@ -712,4 +747,5 @@ module.exports = {
 	getUserList,
 	addMovieToUserList,
 	deleteMovieFromUserList,
+	deleteUserList,
 };
