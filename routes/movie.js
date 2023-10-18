@@ -20,6 +20,8 @@ const {
 	addMovieToUserList,
 	deleteMovieFromUserList,
 	deleteUserList,
+	deleteWatchHistory,
+	deleteMovieFromWatchHistory,
 } = require('../controllers/movie');
 const { validarCampos } = require('../middlewares/validarCampos');
 
@@ -66,6 +68,8 @@ router.get('/get-user-list/:userId', getUserList);
 router.post('/add-movie-user-list', addMovieToUserList);
 router.delete('/delete-movie-user-list', deleteMovieFromUserList);
 router.delete('/delete-user-list/:userId', deleteUserList);
+router.delete('/delete-user-watchhistory/:userId', deleteWatchHistory);
+router.delete('/delete-movie-watchhistory', deleteMovieFromWatchHistory);
 
 router.post('/save-watch-history', [], postWatchHistory);
 router.get('/get-watch-history/:id', [], getWatchHistory);

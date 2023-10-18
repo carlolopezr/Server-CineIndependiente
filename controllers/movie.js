@@ -513,6 +513,9 @@ const getWatchHistory = async (req = request, res = response) => {
 			where: {
 				user_id: id,
 			},
+			include: {
+				movie: true,
+			},
 		});
 
 		if (!watchHistory || watchHistory.length === 0) {
@@ -531,6 +534,62 @@ const getWatchHistory = async (req = request, res = response) => {
 		});
 	}
 };
+
+const deleteWatchHistory = async(req = request, res = response) => {
+	const user_id = req.params.userId;
+	if(!user_id) {
+		return res.status(400).json({
+			msg:"No hay id del usuario en la solicitud."
+		})
+	}
+	try {
+		
+		const deletedWatchHistoryCount = await prisma.watchHistory.deleteMany({
+			where:{
+				user_id
+			}
+		})
+
+		res.status(200).json({
+			msg:"Historial de visualización eliminado correctamente.",
+			deletedWatchHistoryCount
+		})
+	} catch (error) {
+		res.status(500).json({
+			msg:"Ha ocurrido un error al eliminar el historial de visualización."
+		})
+	}
+}
+
+const deleteMovieFromWatchHistory = async(req = request, res = response) => {
+	const { movie_id, user_id } = req.body;
+
+	if(!movie_id || !user_id){
+		return res.status(400).json({
+			msg:"Falta el id en la solicitud"
+		})
+	}
+
+	try {
+		const deletedWatchHistory = await prisma.watchHistory.delete({
+			where:{
+				user_id_movie_id:{
+					user_id,
+					movie_id
+				}
+			}
+		})
+		res.status(200).json({
+			msg:"Película eliminada correctamente del historial.",
+			deletedWatchHistory
+		})
+	} catch (error) {
+		res.status(500).json({
+			msg:"Ha ocurrido un error al eliminar la película del historial.",
+			error
+		})
+	}
+}
 
 const getUserMovies = async (req = request, res = response) => {
 	const user_id = req.params.userId;
@@ -642,7 +701,11 @@ const addMovieToUserList = async (req = request, res = response) => {
 
 const deleteMovieFromUserList = async (req = request, res = response) => {
 	const { movie_id, user_id } = req.body;
-
+	if(!movie_id || !user_id){
+		return res.status(400).json({
+			msg:"Falta el id en la solicitud"
+		})
+	}
 	try {
 		const deletedMovieFromUserList = await prisma.userList.delete({
 			where: {
@@ -748,4 +811,6 @@ module.exports = {
 	addMovieToUserList,
 	deleteMovieFromUserList,
 	deleteUserList,
+	deleteWatchHistory,
+	deleteMovieFromWatchHistory
 };
