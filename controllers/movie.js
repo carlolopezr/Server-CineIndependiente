@@ -250,9 +250,22 @@ const getMovie = async (req = request, res = response) => {
 };
 
 const getAllMovies = async (req = request, res = response) => {
-	const q = req.query.q || '';
+	const q = req.query.q ?? '';
+	const take = Number(req.query.take ?? '0');
+	const skip = Number(req.query.skip ?? '0');
+
+	if (isNaN(take)) {
+		return res.status(400).json({ msg: 'Take debe ser un número' });
+	}
+
+	if (isNaN(skip)) {
+		return res.status(400).json({
+			msg: 'Skip debe ser un número',
+		});
+	}
+
 	try {
-		const movies = await prisma.movie.findMany({
+		let moviesQuery = {
 			where: {
 				enabled: true,
 				explicitContent: false,
@@ -291,7 +304,13 @@ const getAllMovies = async (req = request, res = response) => {
 					},
 				],
 			},
-		});
+			skip,
+		};
+
+		if (take > 0) {
+			moviesQuery.take = take;
+		}
+		const movies = await prisma.movie.findMany(moviesQuery);
 
 		if (!movies || movies.length === 0) {
 			return res.status(404).json({
@@ -432,26 +451,46 @@ const getAllGenres = async (req = request, res = response) => {
 };
 
 const getGenresWithMovies = async (req = request, res = response) => {
-	try {
-		const genres = await prisma.genre.findMany({
-			include: {
-				movies: {
-					where: {
-						productionYear: {
-							not: 0,
-						},
-						enabled: true,
-						explicitContent: false,
-						user: {
-							active: true,
-						},
-						movieUrl: {
-							not: null,
-						},
+	const take = Number(req.query.take ?? '0');
+	const skip = Number(req.query.skip ?? '0');
+
+	if (isNaN(take)) {
+		return res.status(400).json({ msg: 'Take debe ser un número' });
+	}
+
+	if (isNaN(skip)) {
+		return res.status(400).json({
+			msg: 'Skip debe ser un número',
+		});
+	}
+
+	const genresWithMoviesQuery = {
+		include: {
+			movies: {
+				where: {
+					productionYear: {
+						not: 0,
+					},
+					enabled: true,
+					explicitContent: false,
+					user: {
+						active: true,
+					},
+					movieUrl: {
+						not: null,
 					},
 				},
+				skip,
 			},
-		});
+		},
+	};
+
+	if (take > 0) {
+		genresWithMoviesQuery.include.movies.take = take;
+	}
+
+	try {
+		const genres = await prisma.genre.findMany(genresWithMoviesQuery);
 		if (!genres || genres.length === 0) {
 			return res.status(404).json({
 				msg: 'No se encontraron géneros',
@@ -535,61 +574,60 @@ const getWatchHistory = async (req = request, res = response) => {
 	}
 };
 
-const deleteWatchHistory = async(req = request, res = response) => {
+const deleteWatchHistory = async (req = request, res = response) => {
 	const user_id = req.params.userId;
-	if(!user_id) {
+	if (!user_id) {
 		return res.status(400).json({
-			msg:"No hay id del usuario en la solicitud."
-		})
+			msg: 'No hay id del usuario en la solicitud.',
+		});
 	}
 	try {
-		
 		const deletedWatchHistoryCount = await prisma.watchHistory.deleteMany({
-			where:{
-				user_id
-			}
-		})
+			where: {
+				user_id,
+			},
+		});
 
 		res.status(200).json({
-			msg:"Historial de visualización eliminado correctamente.",
-			deletedWatchHistoryCount
-		})
+			msg: 'Historial de visualización eliminado correctamente.',
+			deletedWatchHistoryCount,
+		});
 	} catch (error) {
 		res.status(500).json({
-			msg:"Ha ocurrido un error al eliminar el historial de visualización."
-		})
+			msg: 'Ha ocurrido un error al eliminar el historial de visualización.',
+		});
 	}
-}
+};
 
-const deleteMovieFromWatchHistory = async(req = request, res = response) => {
+const deleteMovieFromWatchHistory = async (req = request, res = response) => {
 	const { movie_id, user_id } = req.body;
 
-	if(!movie_id || !user_id){
+	if (!movie_id || !user_id) {
 		return res.status(400).json({
-			msg:"Falta el id en la solicitud"
-		})
+			msg: 'Falta el id en la solicitud',
+		});
 	}
 
 	try {
 		const deletedWatchHistory = await prisma.watchHistory.delete({
-			where:{
-				user_id_movie_id:{
+			where: {
+				user_id_movie_id: {
 					user_id,
-					movie_id
-				}
-			}
-		})
+					movie_id,
+				},
+			},
+		});
 		res.status(200).json({
-			msg:"Película eliminada correctamente del historial.",
-			deletedWatchHistory
-		})
+			msg: 'Película eliminada correctamente del historial.',
+			deletedWatchHistory,
+		});
 	} catch (error) {
 		res.status(500).json({
-			msg:"Ha ocurrido un error al eliminar la película del historial.",
-			error
-		})
+			msg: 'Ha ocurrido un error al eliminar la película del historial.',
+			error,
+		});
 	}
-}
+};
 
 const getUserMovies = async (req = request, res = response) => {
 	const user_id = req.params.userId;
@@ -701,10 +739,10 @@ const addMovieToUserList = async (req = request, res = response) => {
 
 const deleteMovieFromUserList = async (req = request, res = response) => {
 	const { movie_id, user_id } = req.body;
-	if(!movie_id || !user_id){
+	if (!movie_id || !user_id) {
 		return res.status(400).json({
-			msg:"Falta el id en la solicitud"
-		})
+			msg: 'Falta el id en la solicitud',
+		});
 	}
 	try {
 		const deletedMovieFromUserList = await prisma.userList.delete({
@@ -812,5 +850,5 @@ module.exports = {
 	deleteMovieFromUserList,
 	deleteUserList,
 	deleteWatchHistory,
-	deleteMovieFromWatchHistory
+	deleteMovieFromWatchHistory,
 };
