@@ -459,6 +459,105 @@ const resetPassword = async (req = request, res = response) => {
 	}
 };
 
+const getRecommendedMoviesByGenres = async(req=request, res=response) => {
+
+	try {
+		const {user_id} = req.body
+		let recommendedMovies = []
+		
+		//Obtener los géneros que ha visto el usuario
+		const watchHistory = await prisma.watchHistory.findMany({
+			where:{
+				user_id:user_id
+			},
+			include:{
+				movie: {
+					select: {
+						genres:true
+					}
+				}
+			}
+		}).catch((err) => {
+			throw err
+		})
+
+		if(watchHistory.length < 1){
+			return res.status(200).json({
+				msg:'No hay visualizaciones para este usuario',
+				recommendedMovies: recommendedMovies
+			})
+		}
+
+		const userGenres = watchHistory.flatMap((entry) => {
+			return entry.movie.genres.map((genre) => {
+				return genre.name
+			})
+		})
+
+		//Obtener que géneros ha visto más
+		const genreCounts = userGenres.reduce((accumulator, genre) => {
+			accumulator[genre] = (accumulator[genre] || 0) + 1;
+			return accumulator;
+		  }, {});
+
+		console.log(genreCounts);
+
+		if(!userGenres){
+			return res.status(500).json({
+				msg:'Hubo un error al intentar obtener las recomendaciones',
+				recommendedMovies
+			})
+		}
+
+		recommendedMovies = await prisma.movie.findMany({
+			where: {
+			  genres: {
+				some: {
+				  name: {
+					in: userGenres,	
+				  },
+				},
+			  },
+			  movie_id: {
+				notIn: watchHistory.map((entry) => entry.movie_id),
+			  },
+			  explicitContent: false,
+			  productionYear: {
+				not: 0
+			  },
+			  enabled: true,
+			},
+			take: 100,
+			include: {
+				genres:true
+			}
+			
+		  });
+
+		
+		const scoredMovies = recommendedMovies.map(movie => {
+			const totalScore = movie.genres.reduce((total, genre) => total + (genreCounts[genre.name] || 0), 0);
+			movie.totalScore = totalScore
+		});
+
+		recommendedMovies.sort((a, b) => b.totalScore - a.totalScore);
+
+		if (recommendedMovies.length > 20) {
+			recommendedMovies = recommendedMovies.slice(0, 20)	
+		}
+
+		return res.status(200).json({
+			recommendedMovies
+		})
+		
+	} catch (error) {
+		res.status(500).json({
+			msg:'Hubo un error al intentar obtener la lista de recomendaciones para el usuario',
+			error
+		})
+	}
+}
+
 module.exports = {
 	getUser,
 	postUser,
@@ -471,4 +570,5 @@ module.exports = {
 	updateUser,
 	passwordChangeRequest,
 	resetPassword,
+	getRecommendedMoviesByGenres
 };

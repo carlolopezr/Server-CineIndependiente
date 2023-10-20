@@ -11,6 +11,7 @@ const {
 	updateUser,
 	passwordChangeRequest,
 	resetPassword,
+	getRecommendedMoviesByGenres,
 } = require('../controllers/user');
 const { validateJWT } = require('../middlewares/validateJWT');
 const { body } = require('express-validator');
@@ -87,5 +88,10 @@ router.post('/password-change-request',[
 ], passwordChangeRequest)
 
 router.post('/reset-password', resetPassword)
+
+router.get('/get-recommended-movies-bygenre', [
+	body('user_id', 'Falta el user_id en la solicitud').notEmpty(),
+	validarCampos
+],getRecommendedMoviesByGenres)
 
 module.exports = router;
