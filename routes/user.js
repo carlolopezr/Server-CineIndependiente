@@ -14,7 +14,7 @@ const {
 	getRecommendedMoviesByGenres,
 } = require('../controllers/user');
 const { validateJWT } = require('../middlewares/validateJWT');
-const { body } = require('express-validator');
+const { body, check } = require('express-validator');
 const { validarCampos } = require('../middlewares/validarCampos');
 
 const router = Router();
@@ -89,8 +89,8 @@ router.post('/password-change-request',[
 
 router.post('/reset-password', resetPassword)
 
-router.get('/get-recommended-movies-bygenre', [
-	body('user_id', 'Falta el user_id en la solicitud').notEmpty(),
+router.get('/get-recommended-movies-bygenre/:user_id', [
+	check('user_id', 'Falta el user_id en la solicitud').notEmpty(),
 	validarCampos
 ],getRecommendedMoviesByGenres)
 

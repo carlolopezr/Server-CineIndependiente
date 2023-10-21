@@ -462,7 +462,7 @@ const resetPassword = async (req = request, res = response) => {
 const getRecommendedMoviesByGenres = async(req=request, res=response) => {
 
 	try {
-		const {user_id} = req.body
+		const user_id = req.params.user_id
 		let recommendedMovies = []
 		
 		//Obtener los géneros que ha visto el usuario
