@@ -526,6 +526,9 @@ const getRecommendedMoviesByGenres = async(req=request, res=response) => {
 				not: 0
 			  },
 			  enabled: true,
+			  movieUrl: {
+				not: null
+			  }
 			},
 			take: 100,
 			include: {
