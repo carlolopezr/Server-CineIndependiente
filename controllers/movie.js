@@ -557,12 +557,6 @@ const getWatchHistory = async (req = request, res = response) => {
 			},
 		});
 
-		if (!watchHistory || watchHistory.length === 0) {
-			return res.status(404).json({
-				msg: 'No se ha encontrado el historial de visualización',
-			});
-		}
-
 		res.status(200).json({
 			watchHistory,
 		});
@@ -570,6 +564,7 @@ const getWatchHistory = async (req = request, res = response) => {
 		res.status(500).json({
 			msg: 'Ha ocurrido un error al obtener el historial de visualización',
 			error,
+			watchHistory
 		});
 	}
 };
@@ -813,18 +808,13 @@ const getUserList = async (req = request, res = response) => {
 			},
 		});
 
-		if (!userList || userList.length === 0) {
-			return res.status(404).json({
-				msg: 'Aún no tienes películas agregadas a tu lista.',
-			});
-		}
-
 		res.status(200).json({
 			userList,
 		});
 	} catch (error) {
 		res.status(500).json({
 			msg: 'Ha ocurrido un error al obtener la lista del usuario',
+			userList,
 		});
 	}
 };
