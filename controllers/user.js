@@ -521,6 +521,9 @@ const getRecommendedMoviesByGenres = async(req=request, res=response) => {
 			  movie_id: {
 				notIn: watchHistory.map((entry) => entry.movie_id),
 			  },
+			  user_id: {
+				not: user_id
+			  },
 			  explicitContent: false,
 			  productionYear: {
 				not: 0
