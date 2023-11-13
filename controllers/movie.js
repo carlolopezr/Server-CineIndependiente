@@ -548,7 +548,7 @@ const getWatchHistory = async (req = request, res = response) => {
 	}
 
 	try {
-		const watchHistory = await prisma.watchHistory.findMany({
+		let watchHistory = await prisma.watchHistory.findMany({
 			where: {
 				user_id: id,
 			},
@@ -557,6 +557,14 @@ const getWatchHistory = async (req = request, res = response) => {
 			},
 		});
 
+		watchHistory = watchHistory.filter(
+			({ movie }) =>
+				movie.enabled === true &&
+				movie.movieUrl !== null &&
+				movie.explicitContent === false &&
+				movie.productionYear !== 0
+		);
+
 		res.status(200).json({
 			watchHistory,
 		});
@@ -564,7 +572,7 @@ const getWatchHistory = async (req = request, res = response) => {
 		res.status(500).json({
 			msg: 'Ha ocurrido un error al obtener el historial de visualización',
 			error,
-			watchHistory
+			watchHistory,
 		});
 	}
 };
@@ -799,7 +807,7 @@ const getUserList = async (req = request, res = response) => {
 	}
 
 	try {
-		const userList = await prisma.userList.findMany({
+		let userList = await prisma.userList.findMany({
 			where: {
 				user_id,
 			},
@@ -807,7 +815,13 @@ const getUserList = async (req = request, res = response) => {
 				movie: true,
 			},
 		});
-
+		userList = userList.filter(
+			({ movie }) =>
+				movie.enabled === true &&
+				movie.movieUrl !== null &&
+				movie.explicitContent === false &&
+				movie.productionYear !== 0
+		);
 		res.status(200).json({
 			userList,
 		});
